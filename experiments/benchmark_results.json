@@ -1,0 +1,76 @@
+{
+  "Small Dataset": {
+    "Backtracking (Baseline)": {
+      "time_taken": 0.0051,
+      "nodes_or_iters": 47,
+      "hard_violations": 0,
+      "soft_penalty": 525,
+      "success_rate": "10/10"
+    },
+    "Backtracking (+ Heuristics)": {
+      "time_taken": 0.0353,
+      "nodes_or_iters": 47,
+      "hard_violations": 0,
+      "soft_penalty": 470,
+      "success_rate": "10/10"
+    },
+    "Min-Conflicts": {
+      "time_taken": 0.0092,
+      "nodes_or_iters": 21.5,
+      "hard_violations": 0.0,
+      "soft_penalty": 465.0,
+      "success_rate": "10/10"
+    },
+    "Simulated Annealing (+6 Bonus)": {
+      "time_taken": 0.8041,
+      "nodes_or_iters": 3500.0,
+      "hard_violations": 0.0,
+      "soft_penalty": 161.5,
+      "success_rate": "10/10"
+    },
+    "Hybrid CSP + SA (+6 Bonus)": {
+      "time_taken": 0.1998,
+      "nodes_or_iters": 666.0,
+      "hard_violations": 0.0,
+      "soft_penalty": 280.5,
+      "success_rate": "10/10"
+    }
+  },
+  "Large Dataset": {
+    "Backtracking (Baseline)": {
+      "time_taken": 0.0516,
+      "nodes_or_iters": 132,
+      "hard_violations": 0,
+      "soft_penalty": 1555,
+      "success_rate": "10/10"
+    },
+    "Backtracking (+ Heuristics)": {
+      "time_taken": 1.1845,
+      "nodes_or_iters": 132,
+      "hard_violations": 0,
+      "soft_penalty": 1400,
+      "success_rate": "10/10"
+    },
+    "Min-Conflicts": {
+      "time_taken": 0.1749,
+      "nodes_or_iters": 62.7,
+      "hard_violations": 0.0,
+      "soft_penalty": 1489.0,
+      "success_rate": "10/10"
+    },
+    "Simulated Annealing (+6 Bonus)": {
+      "time_taken": 3.0988,
+      "nodes_or_iters": 5000.0,
+      "hard_violations": 0.0,
+      "soft_penalty": 493.5,
+      "success_rate": "10/10"
+    },
+    "Hybrid CSP + SA (+6 Bonus)": {
+      "time_taken": 1.6207,
+      "nodes_or_iters": 666.0,
+      "hard_violations": 0.0,
+      "soft_penalty": 994.0,
+      "success_rate": "10/10"
+    }
+  }
+}

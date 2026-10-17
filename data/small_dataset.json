@@ -1,0 +1,231 @@
+{
+  "name": "Small_Dataset_3x6x4",
+  "time_structure": {
+    "days": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday"
+    ],
+    "periods_per_day": 6,
+    "break_periods": [
+      3
+    ]
+  },
+  "subjects": {
+    "MATH": {
+      "code": "MATH",
+      "name": "Mathematics",
+      "weekly_hours": 4,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "PHY": {
+      "code": "PHY",
+      "name": "Physics",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CS": {
+      "code": "CS",
+      "name": "Computer Science",
+      "weekly_hours": 4,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "ENG": {
+      "code": "ENG",
+      "name": "English",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CS_LAB": {
+      "code": "CS_LAB",
+      "name": "CS Programming Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "PHY_LAB": {
+      "code": "PHY_LAB",
+      "name": "Physics Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    }
+  },
+  "teachers": {
+    "Prof_Smith": {
+      "name": "Prof_Smith",
+      "subjects_can_teach": [
+        "MATH"
+      ],
+      "max_weekly_load": 15,
+      "unavailable_slots": [
+        [
+          "Monday",
+          1
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Tuesday",
+          2
+        ],
+        [
+          "Wednesday",
+          2
+        ],
+        [
+          "Thursday",
+          2
+        ]
+      ]
+    },
+    "Prof_Johnson": {
+      "name": "Prof_Johnson",
+      "subjects_can_teach": [
+        "PHY",
+        "PHY_LAB"
+      ],
+      "max_weekly_load": 15,
+      "unavailable_slots": [
+        [
+          "Friday",
+          6
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Monday",
+          2
+        ],
+        [
+          "Wednesday",
+          1
+        ]
+      ]
+    },
+    "Prof_Williams": {
+      "name": "Prof_Williams",
+      "subjects_can_teach": [
+        "CS",
+        "CS_LAB"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Tuesday",
+          1
+        ],
+        [
+          "Thursday",
+          1
+        ]
+      ]
+    },
+    "Prof_Brown": {
+      "name": "Prof_Brown",
+      "subjects_can_teach": [
+        "ENG"
+      ],
+      "max_weekly_load": 12,
+      "unavailable_slots": [
+        [
+          "Wednesday",
+          6
+        ]
+      ],
+      "preferred_slots": []
+    },
+    "Prof_Jones": {
+      "name": "Prof_Jones",
+      "subjects_can_teach": [
+        "CS",
+        "CS_LAB"
+      ],
+      "max_weekly_load": 14,
+      "unavailable_slots": [
+        [
+          "Monday",
+          6
+        ]
+      ],
+      "preferred_slots": []
+    },
+    "Prof_Miller": {
+      "name": "Prof_Miller",
+      "subjects_can_teach": [
+        "MATH",
+        "PHY"
+      ],
+      "max_weekly_load": 14,
+      "unavailable_slots": [],
+      "preferred_slots": []
+    }
+  },
+  "classes": {
+    "Class_A": {
+      "name": "Class_A",
+      "strength": 30,
+      "subject_codes": [
+        "MATH",
+        "PHY",
+        "CS",
+        "ENG",
+        "CS_LAB"
+      ],
+      "lunch_break_period": 3
+    },
+    "Class_B": {
+      "name": "Class_B",
+      "strength": 28,
+      "subject_codes": [
+        "MATH",
+        "PHY",
+        "CS",
+        "ENG",
+        "PHY_LAB"
+      ],
+      "lunch_break_period": 3
+    },
+    "Class_C": {
+      "name": "Class_C",
+      "strength": 32,
+      "subject_codes": [
+        "MATH",
+        "PHY",
+        "CS",
+        "CS_LAB",
+        "PHY_LAB"
+      ],
+      "lunch_break_period": 4
+    }
+  },
+  "rooms": {
+    "Room_101": {
+      "name": "Room_101",
+      "capacity": 35,
+      "is_lab": false
+    },
+    "Room_102": {
+      "name": "Room_102",
+      "capacity": 35,
+      "is_lab": false
+    },
+    "Lab_A": {
+      "name": "Lab_A",
+      "capacity": 35,
+      "is_lab": true
+    },
+    "Lab_B": {
+      "name": "Lab_B",
+      "capacity": 35,
+      "is_lab": true
+    }
+  }
+}

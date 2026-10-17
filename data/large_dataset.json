@@ -1,0 +1,465 @@
+{
+  "name": "Large_Dataset_8x7x9",
+  "time_structure": {
+    "days": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday"
+    ],
+    "periods_per_day": 7,
+    "break_periods": [
+      4
+    ]
+  },
+  "subjects": {
+    "AI": {
+      "code": "AI",
+      "name": "Artificial Intelligence",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "DBMS": {
+      "code": "DBMS",
+      "name": "Database Systems",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "OS": {
+      "code": "OS",
+      "name": "Operating Systems",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CN": {
+      "code": "CN",
+      "name": "Computer Networks",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "MATH4": {
+      "code": "MATH4",
+      "name": "Discrete Mathematics",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "SE": {
+      "code": "SE",
+      "name": "Software Engineering",
+      "weekly_hours": 2,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AI_LAB": {
+      "code": "AI_LAB",
+      "name": "AI & ML Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "DBMS_LAB": {
+      "code": "DBMS_LAB",
+      "name": "Database Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "OS_LAB": {
+      "code": "OS_LAB",
+      "name": "OS & Linux Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    }
+  },
+  "teachers": {
+    "Prof_T01": {
+      "name": "Prof_T01",
+      "subjects_can_teach": [
+        "AI",
+        "AI_LAB"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [
+        [
+          "Monday",
+          1
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Tuesday",
+          2
+        ],
+        [
+          "Thursday",
+          2
+        ]
+      ]
+    },
+    "Prof_T02": {
+      "name": "Prof_T02",
+      "subjects_can_teach": [
+        "AI",
+        "AI_LAB"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [
+        [
+          "Friday",
+          7
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Wednesday",
+          2
+        ]
+      ]
+    },
+    "Prof_T03": {
+      "name": "Prof_T03",
+      "subjects_can_teach": [
+        "DBMS",
+        "DBMS_LAB"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Monday",
+          3
+        ]
+      ]
+    },
+    "Prof_T04": {
+      "name": "Prof_T04",
+      "subjects_can_teach": [
+        "DBMS",
+        "DBMS_LAB"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [
+        [
+          "Tuesday",
+          7
+        ]
+      ],
+      "preferred_slots": []
+    },
+    "Prof_T05": {
+      "name": "Prof_T05",
+      "subjects_can_teach": [
+        "OS",
+        "OS_LAB"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Thursday",
+          3
+        ]
+      ]
+    },
+    "Prof_T06": {
+      "name": "Prof_T06",
+      "subjects_can_teach": [
+        "OS",
+        "OS_LAB"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [
+        [
+          "Wednesday",
+          1
+        ]
+      ],
+      "preferred_slots": []
+    },
+    "Prof_T07": {
+      "name": "Prof_T07",
+      "subjects_can_teach": [
+        "CN"
+      ],
+      "max_weekly_load": 14,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Friday",
+          2
+        ]
+      ]
+    },
+    "Prof_T08": {
+      "name": "Prof_T08",
+      "subjects_can_teach": [
+        "CN"
+      ],
+      "max_weekly_load": 14,
+      "unavailable_slots": [
+        [
+          "Thursday",
+          7
+        ]
+      ],
+      "preferred_slots": []
+    },
+    "Prof_T09": {
+      "name": "Prof_T09",
+      "subjects_can_teach": [
+        "MATH4"
+      ],
+      "max_weekly_load": 15,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Monday",
+          2
+        ]
+      ]
+    },
+    "Prof_T10": {
+      "name": "Prof_T10",
+      "subjects_can_teach": [
+        "MATH4"
+      ],
+      "max_weekly_load": 15,
+      "unavailable_slots": [
+        [
+          "Tuesday",
+          1
+        ]
+      ],
+      "preferred_slots": []
+    },
+    "Prof_T11": {
+      "name": "Prof_T11",
+      "subjects_can_teach": [
+        "SE"
+      ],
+      "max_weekly_load": 12,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Wednesday",
+          3
+        ]
+      ]
+    },
+    "Prof_T12": {
+      "name": "Prof_T12",
+      "subjects_can_teach": [
+        "SE"
+      ],
+      "max_weekly_load": 12,
+      "unavailable_slots": [
+        [
+          "Monday",
+          7
+        ]
+      ],
+      "preferred_slots": []
+    },
+    "Prof_T13": {
+      "name": "Prof_T13",
+      "subjects_can_teach": [
+        "AI",
+        "DBMS"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": []
+    },
+    "Prof_T14": {
+      "name": "Prof_T14",
+      "subjects_can_teach": [
+        "OS",
+        "CN"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": []
+    },
+    "Prof_T15": {
+      "name": "Prof_T15",
+      "subjects_can_teach": [
+        "MATH4",
+        "SE"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": []
+    },
+    "Prof_T16": {
+      "name": "Prof_T16",
+      "subjects_can_teach": [
+        "AI_LAB",
+        "DBMS_LAB",
+        "OS_LAB"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": []
+    }
+  },
+  "classes": {
+    "Class_1": {
+      "name": "Class_1",
+      "strength": 40,
+      "subject_codes": [
+        "AI",
+        "DBMS",
+        "OS",
+        "CN",
+        "MATH4",
+        "AI_LAB"
+      ],
+      "lunch_break_period": 4
+    },
+    "Class_2": {
+      "name": "Class_2",
+      "strength": 45,
+      "subject_codes": [
+        "AI",
+        "DBMS",
+        "OS",
+        "CN",
+        "SE",
+        "DBMS_LAB"
+      ],
+      "lunch_break_period": 4
+    },
+    "Class_3": {
+      "name": "Class_3",
+      "strength": 35,
+      "subject_codes": [
+        "AI",
+        "DBMS",
+        "OS",
+        "CN",
+        "MATH4",
+        "AI_LAB"
+      ],
+      "lunch_break_period": 4
+    },
+    "Class_4": {
+      "name": "Class_4",
+      "strength": 40,
+      "subject_codes": [
+        "AI",
+        "DBMS",
+        "OS",
+        "CN",
+        "SE",
+        "DBMS_LAB"
+      ],
+      "lunch_break_period": 4
+    },
+    "Class_5": {
+      "name": "Class_5",
+      "strength": 45,
+      "subject_codes": [
+        "AI",
+        "DBMS",
+        "OS",
+        "CN",
+        "MATH4",
+        "AI_LAB"
+      ],
+      "lunch_break_period": 4
+    },
+    "Class_6": {
+      "name": "Class_6",
+      "strength": 35,
+      "subject_codes": [
+        "AI",
+        "DBMS",
+        "OS",
+        "CN",
+        "SE",
+        "DBMS_LAB"
+      ],
+      "lunch_break_period": 4
+    },
+    "Class_7": {
+      "name": "Class_7",
+      "strength": 40,
+      "subject_codes": [
+        "AI",
+        "DBMS",
+        "OS",
+        "CN",
+        "MATH4",
+        "AI_LAB"
+      ],
+      "lunch_break_period": 4
+    },
+    "Class_8": {
+      "name": "Class_8",
+      "strength": 45,
+      "subject_codes": [
+        "AI",
+        "DBMS",
+        "OS",
+        "CN",
+        "SE",
+        "DBMS_LAB"
+      ],
+      "lunch_break_period": 4
+    }
+  },
+  "rooms": {
+    "Room_101": {
+      "name": "Room_101",
+      "capacity": 50,
+      "is_lab": false
+    },
+    "Room_102": {
+      "name": "Room_102",
+      "capacity": 50,
+      "is_lab": false
+    },
+    "Room_103": {
+      "name": "Room_103",
+      "capacity": 50,
+      "is_lab": false
+    },
+    "Room_104": {
+      "name": "Room_104",
+      "capacity": 50,
+      "is_lab": false
+    },
+    "Room_105": {
+      "name": "Room_105",
+      "capacity": 50,
+      "is_lab": false
+    },
+    "Room_106": {
+      "name": "Room_106",
+      "capacity": 50,
+      "is_lab": false
+    },
+    "Lab_1": {
+      "name": "Lab_1",
+      "capacity": 45,
+      "is_lab": true
+    },
+    "Lab_2": {
+      "name": "Lab_2",
+      "capacity": 45,
+      "is_lab": true
+    },
+    "Lab_3": {
+      "name": "Lab_3",
+      "capacity": 45,
+      "is_lab": true
+    }
+  }
+}

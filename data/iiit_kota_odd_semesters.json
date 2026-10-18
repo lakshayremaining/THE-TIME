@@ -1,0 +1,706 @@
+{
+  "name": "IIIT_Kota_Odd_Semesters_2026",
+  "time_structure": {
+    "days": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday"
+    ],
+    "periods_per_day": 8,
+    "break_periods": [
+      5
+    ],
+    "period_times": [
+      "9:00 - 10:00 AM",
+      "10:00 - 11:00 AM",
+      "11:00 - 12:00 PM",
+      "12:00 - 1:00 PM",
+      "1:00 - 2:00 PM (LUNCH)",
+      "2:00 - 3:00 PM",
+      "3:00 - 4:00 PM",
+      "4:00 - 5:00 PM"
+    ]
+  },
+  "subjects": {
+    "AIT201": {
+      "code": "AIT201",
+      "name": "Digital Systems and Computer Architecture",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIT203": {
+      "code": "AIT203",
+      "name": "Artificial Intelligence",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIT205": {
+      "code": "AIT205",
+      "name": "Machine Learning",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CST207": {
+      "code": "CST207",
+      "name": "Design and Analysis of Algorithms",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "MAT201": {
+      "code": "MAT201",
+      "name": "Mathematics-II",
+      "weekly_hours": 4,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "HST203": {
+      "code": "HST203",
+      "name": "Social Sciences and Professional Ethics",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CSP207": {
+      "code": "CSP207",
+      "name": "DAA Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "AIP203": {
+      "code": "AIP203",
+      "name": "Artificial Intelligence Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "AIP205": {
+      "code": "AIP205",
+      "name": "Machine Learning Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "AIP211": {
+      "code": "AIP211",
+      "name": "Web Development Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "AIT301": {
+      "code": "AIT301",
+      "name": "Reinforcement Learning",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIT303": {
+      "code": "AIT303",
+      "name": "Natural Language Processing",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIT305": {
+      "code": "AIT305",
+      "name": "Data Visualization",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CST301": {
+      "code": "CST301",
+      "name": "Theory of Computation",
+      "weekly_hours": 4,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CST303": {
+      "code": "CST303",
+      "name": "Computer Networks",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIT307": {
+      "code": "AIT307",
+      "name": "Elective-1: Cloud & Big Data",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIP303": {
+      "code": "AIP303",
+      "name": "Natural Language Processing Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "CSP303": {
+      "code": "CSP303",
+      "name": "Computer Networks Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "AIP305": {
+      "code": "AIP305",
+      "name": "Data Visualization Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "CST101": {
+      "code": "CST101",
+      "name": "Computer Systems and Programming",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "ECT101": {
+      "code": "ECT101",
+      "name": "Digital Design",
+      "weekly_hours": 4,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIT101": {
+      "code": "AIT101",
+      "name": "Foundation of Learning",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "HST101": {
+      "code": "HST101",
+      "name": "Communication Skills",
+      "weekly_hours": 2,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "MAT101": {
+      "code": "MAT101",
+      "name": "Mathematics-I",
+      "weekly_hours": 4,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CSP101": {
+      "code": "CSP101",
+      "name": "Computer Systems & Programming Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "AIP111": {
+      "code": "AIP111",
+      "name": "AI Tinkering Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "ECP101": {
+      "code": "ECP101",
+      "name": "Digital Design Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "HSP101": {
+      "code": "HSP101",
+      "name": "Communication Skills Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "HSP111": {
+      "code": "HSP111",
+      "name": "Upnayan-The Induction Programme",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "AIT401": {
+      "code": "AIT401",
+      "name": "Deep Learning & Computer Vision",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIT403": {
+      "code": "AIT403",
+      "name": "MLOps & Autonomous AI Systems",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "CST405": {
+      "code": "CST405",
+      "name": "Information Security & Privacy",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIT407": {
+      "code": "AIT407",
+      "name": "Open Elective-II",
+      "weekly_hours": 3,
+      "is_lab": false,
+      "requires_consecutive": false
+    },
+    "AIP401": {
+      "code": "AIP401",
+      "name": "Advanced AI Lab",
+      "weekly_hours": 2,
+      "is_lab": true,
+      "requires_consecutive": true
+    },
+    "AIP403": {
+      "code": "AIP403",
+      "name": "Capstone Project Phase-I",
+      "weekly_hours": 4,
+      "is_lab": true,
+      "requires_consecutive": true
+    }
+  },
+  "teachers": {
+    "Dr. Pooja Sharma": {
+      "name": "Dr. Pooja Sharma",
+      "subjects_can_teach": [
+        "AIT201",
+        "CSP207",
+        "AIP203",
+        "CST303",
+        "AIP401"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [
+        [
+          "Monday",
+          1
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Tuesday",
+          1
+        ],
+        [
+          "Wednesday",
+          1
+        ],
+        [
+          "Thursday",
+          3
+        ]
+      ]
+    },
+    "Dr. Ritam Sharma": {
+      "name": "Dr. Ritam Sharma",
+      "subjects_can_teach": [
+        "AIT203",
+        "AIT301",
+        "AIT101",
+        "AIT403"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [
+        [
+          "Friday",
+          8
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Monday",
+          2
+        ],
+        [
+          "Tuesday",
+          6
+        ],
+        [
+          "Wednesday",
+          7
+        ]
+      ]
+    },
+    "Dr. Veena Khandelwal": {
+      "name": "Dr. Veena Khandelwal",
+      "subjects_can_teach": [
+        "AIT205",
+        "AIP205",
+        "AIT303",
+        "AIT401"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Monday",
+          1
+        ],
+        [
+          "Wednesday",
+          8
+        ],
+        [
+          "Thursday",
+          1
+        ]
+      ]
+    },
+    "Dr. Ramesh Battula": {
+      "name": "Dr. Ramesh Battula",
+      "subjects_can_teach": [
+        "CST207",
+        "CST301",
+        "CST405"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [
+        [
+          "Thursday",
+          8
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Tuesday",
+          2
+        ],
+        [
+          "Wednesday",
+          2
+        ]
+      ]
+    },
+    "Dr. Prashant Goyal": {
+      "name": "Dr. Prashant Goyal",
+      "subjects_can_teach": [
+        "MAT201",
+        "MAT101"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Tuesday",
+          2
+        ],
+        [
+          "Wednesday",
+          2
+        ],
+        [
+          "Thursday",
+          2
+        ]
+      ]
+    },
+    "Dr. Ankita Birla": {
+      "name": "Dr. Ankita Birla",
+      "subjects_can_teach": [
+        "HST203",
+        "HST101",
+        "HSP101",
+        "HSP111"
+      ],
+      "max_weekly_load": 16,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Tuesday",
+          3
+        ],
+        [
+          "Wednesday",
+          3
+        ],
+        [
+          "Friday",
+          4
+        ]
+      ]
+    },
+    "Ms. Kalpana Pathak": {
+      "name": "Ms. Kalpana Pathak",
+      "subjects_can_teach": [
+        "AIP211",
+        "AIT305"
+      ],
+      "max_weekly_load": 14,
+      "unavailable_slots": [
+        [
+          "Monday",
+          8
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Friday",
+          6
+        ],
+        [
+          "Friday",
+          7
+        ]
+      ]
+    },
+    "Dr. Shibna Hussain": {
+      "name": "Dr. Shibna Hussain",
+      "subjects_can_teach": [
+        "AIP205",
+        "AIP303",
+        "AIP403"
+      ],
+      "max_weekly_load": 14,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Thursday",
+          6
+        ],
+        [
+          "Thursday",
+          7
+        ]
+      ]
+    },
+    "Dr. Vikas Gupta": {
+      "name": "Dr. Vikas Gupta",
+      "subjects_can_teach": [
+        "ECT101",
+        "ECP101"
+      ],
+      "max_weekly_load": 15,
+      "unavailable_slots": [
+        [
+          "Wednesday",
+          1
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Monday",
+          3
+        ],
+        [
+          "Tuesday",
+          4
+        ]
+      ]
+    },
+    "Dr. Saurabh Kumar": {
+      "name": "Dr. Saurabh Kumar",
+      "subjects_can_teach": [
+        "CST101",
+        "CSP101"
+      ],
+      "max_weekly_load": 15,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Monday",
+          2
+        ],
+        [
+          "Wednesday",
+          4
+        ]
+      ]
+    },
+    "Dr. Neha Agarwal": {
+      "name": "Dr. Neha Agarwal",
+      "subjects_can_teach": [
+        "CST303",
+        "CSP303"
+      ],
+      "max_weekly_load": 15,
+      "unavailable_slots": [],
+      "preferred_slots": [
+        [
+          "Tuesday",
+          3
+        ],
+        [
+          "Thursday",
+          4
+        ]
+      ]
+    },
+    "Dr. Amit Kumar": {
+      "name": "Dr. Amit Kumar",
+      "subjects_can_teach": [
+        "AIT307",
+        "AIP111",
+        "AIT407"
+      ],
+      "max_weekly_load": 15,
+      "unavailable_slots": [
+        [
+          "Friday",
+          1
+        ]
+      ],
+      "preferred_slots": [
+        [
+          "Wednesday",
+          6
+        ],
+        [
+          "Thursday",
+          6
+        ]
+      ]
+    },
+    "Dr. Priya Jain": {
+      "name": "Dr. Priya Jain",
+      "subjects_can_teach": [
+        "AIP305"
+      ],
+      "max_weekly_load": 14,
+      "unavailable_slots": [],
+      "preferred_slots": []
+    }
+  },
+  "classes": {
+    "Sem_3_AIDE": {
+      "name": "Sem_3_AIDE",
+      "strength": 60,
+      "subject_codes": [
+        "AIT201",
+        "AIT203",
+        "AIT205",
+        "CST207",
+        "MAT201",
+        "HST203",
+        "CSP207",
+        "AIP203",
+        "AIP205",
+        "AIP211"
+      ],
+      "lunch_break_period": 5
+    },
+    "Sem_5_AIDE": {
+      "name": "Sem_5_AIDE",
+      "strength": 55,
+      "subject_codes": [
+        "AIT301",
+        "AIT303",
+        "AIT305",
+        "CST301",
+        "CST303",
+        "AIT307",
+        "AIP303",
+        "CSP303",
+        "AIP305"
+      ],
+      "lunch_break_period": 5
+    },
+    "Sem_1_AIDE": {
+      "name": "Sem_1_AIDE",
+      "strength": 65,
+      "subject_codes": [
+        "CST101",
+        "ECT101",
+        "AIT101",
+        "HST101",
+        "MAT101",
+        "CSP101",
+        "AIP111",
+        "ECP101",
+        "HSP101",
+        "HSP111"
+      ],
+      "lunch_break_period": 5
+    },
+    "Sem_7_AIDE": {
+      "name": "Sem_7_AIDE",
+      "strength": 45,
+      "subject_codes": [
+        "AIT401",
+        "AIT403",
+        "CST405",
+        "AIT407",
+        "AIP401",
+        "AIP403"
+      ],
+      "lunch_break_period": 5
+    }
+  },
+  "rooms": {
+    "RM-241": {
+      "name": "RM-241",
+      "capacity": 65,
+      "is_lab": false
+    },
+    "RM-242": {
+      "name": "RM-242",
+      "capacity": 65,
+      "is_lab": false
+    },
+    "RM-243": {
+      "name": "RM-243",
+      "capacity": 75,
+      "is_lab": false
+    },
+    "LT6": {
+      "name": "LT6",
+      "capacity": 80,
+      "is_lab": false
+    },
+    "R-307": {
+      "name": "R-307",
+      "capacity": 60,
+      "is_lab": false
+    },
+    "LT1": {
+      "name": "LT1",
+      "capacity": 100,
+      "is_lab": false
+    },
+    "LT2": {
+      "name": "LT2",
+      "capacity": 100,
+      "is_lab": false
+    },
+    "LAB-36": {
+      "name": "LAB-36",
+      "capacity": 70,
+      "is_lab": true
+    },
+    "LAB-137": {
+      "name": "LAB-137",
+      "capacity": 70,
+      "is_lab": true
+    },
+    "LAB-18": {
+      "name": "LAB-18",
+      "capacity": 70,
+      "is_lab": true
+    },
+    "LAB-32": {
+      "name": "LAB-32",
+      "capacity": 70,
+      "is_lab": true
+    },
+    "LAB-101": {
+      "name": "LAB-101",
+      "capacity": 70,
+      "is_lab": true
+    },
+    "LAB-102": {
+      "name": "LAB-102",
+      "capacity": 70,
+      "is_lab": true
+    }
+  }
+}

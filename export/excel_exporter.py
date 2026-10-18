@@ -94,7 +94,11 @@ def export_timetable_to_excel_bytes(
         ws_class.cell(row=current_row, column=1).fill = header_fill
         ws_class.cell(row=current_row, column=1).alignment = center_align
         for col_idx, p in enumerate(periods, 2):
-            cell = ws_class.cell(row=current_row, column=col_idx, value=f"Period {p}")
+            if problem.time_structure.period_times and p - 1 < len(problem.time_structure.period_times):
+                header_text = f"P{p}\n{problem.time_structure.period_times[p - 1]}"
+            else:
+                header_text = f"Period {p}"
+            cell = ws_class.cell(row=current_row, column=col_idx, value=header_text)
             cell.font = header_font
             cell.fill = header_fill
             cell.alignment = center_align
@@ -147,7 +151,11 @@ def export_timetable_to_excel_bytes(
         ws_teacher.cell(row=current_row, column=1).fill = header_fill
         ws_teacher.cell(row=current_row, column=1).alignment = center_align
         for col_idx, p in enumerate(periods, 2):
-            cell = ws_teacher.cell(row=current_row, column=col_idx, value=f"Period {p}")
+            if problem.time_structure.period_times and p - 1 < len(problem.time_structure.period_times):
+                header_text = f"P{p}\n{problem.time_structure.period_times[p - 1]}"
+            else:
+                header_text = f"Period {p}"
+            cell = ws_teacher.cell(row=current_row, column=col_idx, value=header_text)
             cell.font = header_font
             cell.fill = header_fill
             cell.alignment = center_align

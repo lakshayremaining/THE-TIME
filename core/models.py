@@ -46,6 +46,7 @@ class TimeStructure:
     days: List[str]  # e.g., ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     periods_per_day: int  # e.g., 6 or 7
     break_periods: List[int] = field(default_factory=list)  # Periods marked as global breaks if any
+    period_times: List[str] = field(default_factory=list)  # e.g., ["9:00-10:00 AM", ...]
 
 
 @dataclass
@@ -140,6 +141,16 @@ class TimetableProblem:
                 ]
                 if not qualified_teachers:
                     errors.append(f"No teacher qualified to teach subject '{s_code}' for class '{c.name}'.")
+
+                eligible_rooms = [
+                    r for r in self.rooms.values()
+                    if r.capacity >= c.strength and r.is_lab == subj.is_lab
+                ]
+                if not eligible_rooms:
+                    room_type = "Lab" if subj.is_lab else "Classroom"
+                    errors.append(
+                        f"No suitable {room_type} found with capacity >= {c.strength} for class '{c.name}' taking '{s_code}'."
+                    )
 
         return len(errors) == 0, errors
 
@@ -271,7 +282,8 @@ class TimetableProblem:
             "time_structure": {
                 "days": self.time_structure.days,
                 "periods_per_day": self.time_structure.periods_per_day,
-                "break_periods": self.time_structure.break_periods
+                "break_periods": self.time_structure.break_periods,
+                "period_times": self.time_structure.period_times
             },
             "subjects": {k: v.__dict__ for k, v in self.subjects.items()},
             "teachers": {
@@ -293,7 +305,8 @@ class TimetableProblem:
         time_struct = TimeStructure(
             days=data["time_structure"]["days"],
             periods_per_day=data["time_structure"]["periods_per_day"],
-            break_periods=data["time_structure"].get("break_periods", [])
+            break_periods=data["time_structure"].get("break_periods", []),
+            period_times=data["time_structure"].get("period_times", [])
         )
         subjects = {
             k: Subject(**v) for k, v in data["subjects"].items()

@@ -22,7 +22,7 @@ from typing import Dict, Optional, List
 
 from core.models import TimetableProblem, SlotAssignment, SessionVariable
 from core.constraints import ConstraintChecker
-from data.datasets import get_small_dataset, get_large_dataset
+from data.datasets import get_small_dataset, get_large_dataset, get_iiit_kota_odd_sem_dataset
 from solvers.backtracking import PlainBacktrackingSolver, HeuristicBacktrackingSolver
 from solvers.min_conflicts import MinConflictsSolver
 from solvers.simulated_annealing import SimulatedAnnealingSolver
@@ -33,7 +33,7 @@ from export.csv_exporter import export_timetable_to_csv_string
 
 # Page config
 st.set_page_config(
-    page_title="AI Timetable Scheduler",
+    page_title="AI Timetable Scheduler - IIIT Kota",
     page_icon="📅",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -52,6 +52,15 @@ st.markdown("""
         font-size: 1.05rem;
         color: #475569;
         margin-bottom: 1.5rem;
+    }
+    .inst-badge {
+        background: linear-gradient(90deg, #1E3A8A 0%, #3B82F6 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: inline-block;
     }
     .metric-card {
         background-color: #F8FAFC;
@@ -82,7 +91,7 @@ st.markdown("""
 
 def init_session_state():
     if "problem" not in st.session_state:
-        st.session_state.problem = get_small_dataset()
+        st.session_state.problem = get_iiit_kota_odd_sem_dataset()
     if "assignment" not in st.session_state:
         st.session_state.assignment = None
     if "solver_result" not in st.session_state:
@@ -100,14 +109,23 @@ st.sidebar.title("Configuration & Data")
 # Dataset Selection
 dataset_choice = st.sidebar.selectbox(
     "Choose Dataset",
-    ["Small Dataset (3 Classes, 6 Teachers, 4 Rooms)",
-     "Large Dataset (8 Classes, 16 Teachers, 9 Rooms)",
-     "Upload Custom JSON Dataset"],
+    [
+        "IIIT Kota - Odd Semesters (Sem 1, 3, 5, 7 - Real Timetable)",
+        "Small Dataset (3 Classes, 6 Teachers, 4 Rooms, 5x6)",
+        "Large Dataset (8 Classes, 16 Teachers, 9 Rooms, 5x7)",
+        "Upload Custom JSON Dataset"
+    ],
     index=0
 )
 
-if dataset_choice.startswith("Small"):
-    if st.sidebar.button("🔄 Reload Small Dataset"):
+if dataset_choice.startswith("IIIT Kota"):
+    if st.sidebar.button("🔄 Reload IIIT Kota Odd Semesters") or st.session_state.problem.name != "IIIT_Kota_Odd_Semesters_2026":
+        st.session_state.problem = get_iiit_kota_odd_sem_dataset()
+        st.session_state.assignment = None
+        st.session_state.solver_result = None
+        st.rerun()
+elif dataset_choice.startswith("Small"):
+    if st.sidebar.button("🔄 Reload Small Dataset") or st.session_state.problem.name != "Small_Dataset_3x6x4":
         st.session_state.problem = get_small_dataset()
         st.session_state.assignment = None
         st.session_state.solver_result = None
@@ -298,16 +316,31 @@ with tab2:
         days = problem.time_structure.days
         periods = list(range(1, problem.time_structure.periods_per_day + 1))
 
+        def get_p_name(p: int) -> str:
+            if problem.time_structure.period_times and p - 1 < len(problem.time_structure.period_times):
+                return f"P{p} ({problem.time_structure.period_times[p - 1]})"
+            return f"Period {p}"
+
         if view_mode == "By Class Batch":
             selected_class = st.selectbox("Select Class Batch", list(problem.classes.keys()))
             c_batch = problem.classes[selected_class]
 
+            # Room hint
+            room_hint = {
+                "Sem_3_AIDE": "RM-241 (Primary Lecture Hall, capacity: 65)",
+                "Sem_5_AIDE": "RM-242 (Lecture Hall, capacity: 65)",
+                "Sem_1_AIDE": "RM-243 (Lecture Hall, capacity: 75)",
+                "Sem_7_AIDE": "R-307 / LT2 (capacity: 60-100)"
+            }.get(selected_class, "Designated Classrooms & Labs")
+            st.caption(f"🏫 **Assigned Classroom/Locus**: `{room_hint}` | **Strength**: {c_batch.strength} students")
+
             # Build grid
-            grid_data = {f"Period {p}": [] for p in periods}
+            grid_data = {get_p_name(p): [] for p in periods}
             for day in days:
                 for p in periods:
+                    col_key = get_p_name(p)
                     if p == c_batch.lunch_break_period:
-                        grid_data[f"Period {p}"].append("🍱 LUNCH BREAK")
+                        grid_data[col_key].append("🍱 LUNCH BREAK")
                     else:
                         # Find session
                         matched = [
@@ -315,48 +348,51 @@ with tab2:
                             for vid, slot in assignment.items()
                             if var_dict[vid].class_name == selected_class and slot.day == day and slot.period == p
                         ]
-                        grid_data[f"Period {p}"].append("\n".join(matched) if matched else "—")
+                        grid_data[col_key].append("\n".join(matched) if matched else "—")
 
             df = pd.DataFrame(grid_data, index=days)
-            st.dataframe(df, use_container_width=True, height=260)
+            st.dataframe(df, use_container_width=True, height=290)
 
         elif view_mode == "By Teacher":
             selected_teacher = st.selectbox("Select Teacher", list(problem.teachers.keys()))
             t_obj = problem.teachers[selected_teacher]
+            st.caption(f"👨‍🏫 **Faculty**: {t_obj.name} | **Max Weekly Load**: {t_obj.max_weekly_load} hrs | **Teaches**: {', '.join(t_obj.subjects_can_teach)}")
 
-            grid_data = {f"Period {p}": [] for p in periods}
+            grid_data = {get_p_name(p): [] for p in periods}
             for day in days:
                 for p in periods:
+                    col_key = get_p_name(p)
                     if (day, p) in t_obj.unavailable_slots:
-                        grid_data[f"Period {p}"].append("⛔ Unavailable")
+                        grid_data[col_key].append("⛔ Unavailable")
                     else:
                         matched = [
                             f"{var_dict[vid].class_name}: {var_dict[vid].subject_code} ({slot.room_name})"
                             for vid, slot in assignment.items()
                             if var_dict[vid].teacher_name == selected_teacher and slot.day == day and slot.period == p
                         ]
-                        grid_data[f"Period {p}"].append("\n".join(matched) if matched else "—")
+                        grid_data[col_key].append("\n".join(matched) if matched else "—")
 
             df = pd.DataFrame(grid_data, index=days)
-            st.dataframe(df, use_container_width=True, height=260)
+            st.dataframe(df, use_container_width=True, height=290)
 
         else:  # By Room
             selected_room = st.selectbox("Select Room", list(problem.rooms.keys()))
             r_obj = problem.rooms[selected_room]
-            st.caption(f"Capacity: {r_obj.capacity} | Type: {'Lab' if r_obj.is_lab else 'Classroom'}")
+            st.caption(f"🏫 **Room**: {r_obj.name} | **Capacity**: {r_obj.capacity} | **Type**: {'Lab Room' if r_obj.is_lab else 'Theory Classroom'}")
 
-            grid_data = {f"Period {p}": [] for p in periods}
+            grid_data = {get_p_name(p): [] for p in periods}
             for day in days:
                 for p in periods:
+                    col_key = get_p_name(p)
                     matched = [
                         f"{var_dict[vid].class_name} - {var_dict[vid].subject_code} ({var_dict[vid].teacher_name})"
                         for vid, slot in assignment.items()
                         if slot.room_name == selected_room and slot.day == day and slot.period == p
                     ]
-                    grid_data[f"Period {p}"].append("\n".join(matched) if matched else "—")
+                    grid_data[col_key].append("\n".join(matched) if matched else "—")
 
             df = pd.DataFrame(grid_data, index=days)
-            st.dataframe(df, use_container_width=True, height=260)
+            st.dataframe(df, use_container_width=True, height=290)
 
 # ----------------- TAB 3: MANUAL EDITING & CONFLICT FLAGGER -----------------
 with tab3:

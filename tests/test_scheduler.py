@@ -69,6 +69,19 @@ class TestTimetableScheduler(unittest.TestCase):
         self.assertTrue(res.success)
         self.assertEqual(res.hard_violations, 0)
 
+    def test_iiit_kota_odd_sem_solvability(self):
+        from data.datasets import get_iiit_kota_odd_sem_dataset
+        iiit = get_iiit_kota_odd_sem_dataset()
+        valid, errors = iiit.validate_input()
+        self.assertTrue(valid, f"Validation errors: {errors}")
+        self.assertEqual(len(iiit.variables), 96)
+
+        # Verify Min-Conflicts solves it
+        solver = MinConflictsSolver(iiit, max_iterations=2000, random_seed=42)
+        res = solver.solve()
+        self.assertTrue(res.success)
+        self.assertEqual(res.hard_violations, 0)
+
     def test_exporters(self):
         solver = HeuristicBacktrackingSolver(self.small_problem)
         res = solver.solve()

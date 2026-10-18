@@ -11,7 +11,8 @@
     "periods_per_day": 6,
     "break_periods": [
       3
-    ]
+    ],
+    "period_times": []
   },
   "subjects": {
     "MATH": {

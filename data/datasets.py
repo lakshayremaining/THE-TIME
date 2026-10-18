@@ -204,6 +204,296 @@ def get_large_dataset() -> TimetableProblem:
     return problem
 
 
+def get_iiit_kota_odd_sem_dataset() -> TimetableProblem:
+    """
+    Real-World Dataset: IIIT Kota - Odd Semesters (Session July-Dec 2026)
+    Department of Artificial Intelligence & Data Engineering
+    Includes:
+    - 3rd Semester (AIDE): Digital Systems (PS), AI (RS), ML (VK), DAA (RB), Math-II (PG), Ethics (AB),
+                           DAA Lab (PS), AI Lab (PS), ML Lab (VK+SH), Web Dev Lab (KP).
+    - 5th Semester (AIDE): Reinforcement Learning (RS), NLP (VK), Data Viz (KP), TOC (RB),
+                           Computer Networks (NA), Elective-1 (AK), NLP Lab (SH), CN Lab (NA), Data Viz Lab (PJ).
+    - 1st Semester (AIDE): Programming CST101 (SK), Digital Design ECT101 (VG), Foundation of Learning AIT101 (RS),
+                           Communication Skills HST101 (AB), Math-I MAT101 (PG), CSP Lab (SK), AI Tinkering (AK),
+                           Digital Design Lab (VG), Comm Lab (AB), Induction Upnayan (AB).
+    - Augmented 7th Semester (AIDE): Deep Learning (VK), MLOps (RS), Cyber Security (RB), Elective (AK),
+                                     AI Capstone Lab (PS), Project Phase-I (SH).
+    - Time Structure: 5 Working Days (Mon-Fri) x 8 Slots (1:00 PM - 2:00 PM is Lunch Break).
+    - Real Rooms: RM-241 (Sem 3), RM-242 (Sem 5), RM-243 (Sem 1), LT6, R-307, LT1, LT2,
+                  LAB-36, LAB-137, LAB-18, LAB-32, LAB-101, LAB-102.
+    """
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    period_times = [
+        "9:00 - 10:00 AM",
+        "10:00 - 11:00 AM",
+        "11:00 - 12:00 PM",
+        "12:00 - 1:00 PM",
+        "1:00 - 2:00 PM (LUNCH)",
+        "2:00 - 3:00 PM",
+        "3:00 - 4:00 PM",
+        "4:00 - 5:00 PM"
+    ]
+    # Period 5 is Lunch Break
+    time_struct = TimeStructure(
+        days=days,
+        periods_per_day=8,
+        break_periods=[5],
+        period_times=period_times
+    )
+
+    # 1. Subjects (Exact codes and names from the 3 semester images)
+    subjects = {
+        # --- 3rd Semester (Picture 1) ---
+        "AIT201": Subject("AIT201", "Digital Systems and Computer Architecture", weekly_hours=3, is_lab=False),
+        "AIT203": Subject("AIT203", "Artificial Intelligence", weekly_hours=3, is_lab=False),
+        "AIT205": Subject("AIT205", "Machine Learning", weekly_hours=3, is_lab=False),
+        "CST207": Subject("CST207", "Design and Analysis of Algorithms", weekly_hours=3, is_lab=False),
+        "MAT201": Subject("MAT201", "Mathematics-II", weekly_hours=4, is_lab=False),
+        "HST203": Subject("HST203", "Social Sciences and Professional Ethics", weekly_hours=3, is_lab=False),
+        "CSP207": Subject("CSP207", "DAA Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "AIP203": Subject("AIP203", "Artificial Intelligence Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "AIP205": Subject("AIP205", "Machine Learning Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "AIP211": Subject("AIP211", "Web Development Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+
+        # --- 5th Semester (Picture 2) ---
+        "AIT301": Subject("AIT301", "Reinforcement Learning", weekly_hours=3, is_lab=False),
+        "AIT303": Subject("AIT303", "Natural Language Processing", weekly_hours=3, is_lab=False),
+        "AIT305": Subject("AIT305", "Data Visualization", weekly_hours=3, is_lab=False),
+        "CST301": Subject("CST301", "Theory of Computation", weekly_hours=4, is_lab=False),
+        "CST303": Subject("CST303", "Computer Networks", weekly_hours=3, is_lab=False),
+        "AIT307": Subject("AIT307", "Elective-1: Cloud & Big Data", weekly_hours=3, is_lab=False),
+        "AIP303": Subject("AIP303", "Natural Language Processing Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "CSP303": Subject("CSP303", "Computer Networks Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "AIP305": Subject("AIP305", "Data Visualization Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+
+        # --- 1st Semester (Picture 3) ---
+        "CST101": Subject("CST101", "Computer Systems and Programming", weekly_hours=3, is_lab=False),
+        "ECT101": Subject("ECT101", "Digital Design", weekly_hours=4, is_lab=False),
+        "AIT101": Subject("AIT101", "Foundation of Learning", weekly_hours=3, is_lab=False),
+        "HST101": Subject("HST101", "Communication Skills", weekly_hours=2, is_lab=False),
+        "MAT101": Subject("MAT101", "Mathematics-I", weekly_hours=4, is_lab=False),
+        "CSP101": Subject("CSP101", "Computer Systems & Programming Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "AIP111": Subject("AIP111", "AI Tinkering Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "ECP101": Subject("ECP101", "Digital Design Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "HSP101": Subject("HSP101", "Communication Skills Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "HSP111": Subject("HSP111", "Upnayan-The Induction Programme", weekly_hours=2, is_lab=True, requires_consecutive=True),
+
+        # --- Augmented 7th Semester (B.Tech Final Year Odd Semester) ---
+        "AIT401": Subject("AIT401", "Deep Learning & Computer Vision", weekly_hours=3, is_lab=False),
+        "AIT403": Subject("AIT403", "MLOps & Autonomous AI Systems", weekly_hours=3, is_lab=False),
+        "CST405": Subject("CST405", "Information Security & Privacy", weekly_hours=3, is_lab=False),
+        "AIT407": Subject("AIT407", "Open Elective-II", weekly_hours=3, is_lab=False),
+        "AIP401": Subject("AIP401", "Advanced AI Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "AIP403": Subject("AIP403", "Capstone Project Phase-I", weekly_hours=4, is_lab=True, requires_consecutive=True),
+    }
+
+    # 2. Teachers (All faculty from Picture 1 + Department Faculty for 1st & 5th & 7th semesters)
+    teachers = {
+        # Real faculty from 3rd Sem table (Picture 1)
+        "Dr. Pooja Sharma": Teacher(
+            name="Dr. Pooja Sharma",
+            subjects_can_teach=["AIT201", "CSP207", "AIP203", "CST303", "AIP401"],
+            max_weekly_load=16,
+            unavailable_slots=[("Monday", 1)],
+            preferred_slots=[("Tuesday", 1), ("Wednesday", 1), ("Thursday", 3)]
+        ),
+        "Dr. Ritam Sharma": Teacher(
+            name="Dr. Ritam Sharma",
+            subjects_can_teach=["AIT203", "AIT301", "AIT101", "AIT403"],
+            max_weekly_load=16,
+            unavailable_slots=[("Friday", 8)],
+            preferred_slots=[("Monday", 2), ("Tuesday", 6), ("Wednesday", 7)]
+        ),
+        "Dr. Veena Khandelwal": Teacher(
+            name="Dr. Veena Khandelwal",
+            subjects_can_teach=["AIT205", "AIP205", "AIT303", "AIT401"],
+            max_weekly_load=16,
+            unavailable_slots=[],
+            preferred_slots=[("Monday", 1), ("Wednesday", 8), ("Thursday", 1)]
+        ),
+        "Dr. Ramesh Battula": Teacher(
+            name="Dr. Ramesh Battula",
+            subjects_can_teach=["CST207", "CST301", "CST405"],
+            max_weekly_load=16,
+            unavailable_slots=[("Thursday", 8)],
+            preferred_slots=[("Tuesday", 2), ("Wednesday", 2)]
+        ),
+        "Dr. Prashant Goyal": Teacher(
+            name="Dr. Prashant Goyal",
+            subjects_can_teach=["MAT201", "MAT101"],
+            max_weekly_load=16,
+            unavailable_slots=[],
+            preferred_slots=[("Tuesday", 2), ("Wednesday", 2), ("Thursday", 2)]
+        ),
+        "Dr. Ankita Birla": Teacher(
+            name="Dr. Ankita Birla",
+            subjects_can_teach=["HST203", "HST101", "HSP101", "HSP111"],
+            max_weekly_load=16,
+            unavailable_slots=[],
+            preferred_slots=[("Tuesday", 3), ("Wednesday", 3), ("Friday", 4)]
+        ),
+        "Ms. Kalpana Pathak": Teacher(
+            name="Ms. Kalpana Pathak",
+            subjects_can_teach=["AIP211", "AIT305"],
+            max_weekly_load=14,
+            unavailable_slots=[("Monday", 8)],
+            preferred_slots=[("Friday", 6), ("Friday", 7)]
+        ),
+        "Dr. Shibna Hussain": Teacher(
+            name="Dr. Shibna Hussain",
+            subjects_can_teach=["AIP205", "AIP303", "AIP403"],
+            max_weekly_load=14,
+            unavailable_slots=[],
+            preferred_slots=[("Thursday", 6), ("Thursday", 7)]
+        ),
+
+        # Department faculty for 1st, 5th, and 7th Semesters
+        "Dr. Vikas Gupta": Teacher(
+            name="Dr. Vikas Gupta",
+            subjects_can_teach=["ECT101", "ECP101"],
+            max_weekly_load=15,
+            unavailable_slots=[("Wednesday", 1)],
+            preferred_slots=[("Monday", 3), ("Tuesday", 4)]
+        ),
+        "Dr. Saurabh Kumar": Teacher(
+            name="Dr. Saurabh Kumar",
+            subjects_can_teach=["CST101", "CSP101"],
+            max_weekly_load=15,
+            unavailable_slots=[],
+            preferred_slots=[("Monday", 2), ("Wednesday", 4)]
+        ),
+        "Dr. Neha Agarwal": Teacher(
+            name="Dr. Neha Agarwal",
+            subjects_can_teach=["CST303", "CSP303"],
+            max_weekly_load=15,
+            unavailable_slots=[],
+            preferred_slots=[("Tuesday", 3), ("Thursday", 4)]
+        ),
+        "Dr. Amit Kumar": Teacher(
+            name="Dr. Amit Kumar",
+            subjects_can_teach=["AIT307", "AIP111", "AIT407"],
+            max_weekly_load=15,
+            unavailable_slots=[("Friday", 1)],
+            preferred_slots=[("Wednesday", 6), ("Thursday", 6)]
+        ),
+        "Dr. Priya Jain": Teacher(
+            name="Dr. Priya Jain",
+            subjects_can_teach=["AIP305"],
+            max_weekly_load=14,
+            unavailable_slots=[],
+            preferred_slots=[]
+        )
+    }
+
+    # 3. Classes / Student Batches (Odd Semesters)
+    classes = {
+        "Sem_3_AIDE": ClassBatch(
+            name="Sem_3_AIDE",
+            strength=60,
+            subject_codes=["AIT201", "AIT203", "AIT205", "CST207", "MAT201", "HST203",
+                           "CSP207", "AIP203", "AIP205", "AIP211"],
+            lunch_break_period=5  # 1:00 PM - 2:00 PM Lunch Break
+        ),
+        "Sem_5_AIDE": ClassBatch(
+            name="Sem_5_AIDE",
+            strength=55,
+            subject_codes=["AIT301", "AIT303", "AIT305", "CST301", "CST303", "AIT307",
+                           "AIP303", "CSP303", "AIP305"],
+            lunch_break_period=5
+        ),
+        "Sem_1_AIDE": ClassBatch(
+            name="Sem_1_AIDE",
+            strength=65,
+            subject_codes=["CST101", "ECT101", "AIT101", "HST101", "MAT101",
+                           "CSP101", "AIP111", "ECP101", "HSP101", "HSP111"],
+            lunch_break_period=5
+        ),
+        "Sem_7_AIDE": ClassBatch(
+            name="Sem_7_AIDE",
+            strength=45,
+            subject_codes=["AIT401", "AIT403", "CST405", "AIT407", "AIP401", "AIP403"],
+            lunch_break_period=5
+        )
+    }
+
+    # 4. Rooms (Exact classrooms & labs from Picture 1 + Institute rooms)
+    rooms = {
+        # Classrooms
+        "RM-241": Room("RM-241", capacity=65, is_lab=False),  # Primary room for Sem 3 (as in photo)
+        "RM-242": Room("RM-242", capacity=65, is_lab=False),  # Primary room for Sem 5
+        "RM-243": Room("RM-243", capacity=75, is_lab=False),  # Primary room for Sem 1
+        "LT6": Room("LT6", capacity=80, is_lab=False),        # Lecture Theatre 6 (from photo)
+        "R-307": Room("R-307", capacity=60, is_lab=False),    # Room 307 (from photo)
+        "LT1": Room("LT1", capacity=100, is_lab=False),       # Large Lecture Theatre
+        "LT2": Room("LT2", capacity=100, is_lab=False),
+
+        # Labs (Exact labs from Picture 1)
+        "LAB-36": Room("LAB-36", capacity=70, is_lab=True),    # AI & DAA Lab (from photo)
+        "LAB-137": Room("LAB-137", capacity=70, is_lab=True),  # ML & Algorithms Lab (from photo)
+        "LAB-18": Room("LAB-18", capacity=70, is_lab=True),    # Web & Systems Lab (from photo)
+        "LAB-32": Room("LAB-32", capacity=70, is_lab=True),    # Web Dev Lab (from photo)
+        "LAB-101": Room("LAB-101", capacity=70, is_lab=True),  # Digital Design Lab
+        "LAB-102": Room("LAB-102", capacity=70, is_lab=True),  # AI Tinkering & IoT Lab
+    }
+
+    # Teacher mapping ensuring exact instructors from Picture 1
+    teacher_mapping = {
+        # 3rd Sem (Exact from Picture 1)
+        ("Sem_3_AIDE", "AIT201"): "Dr. Pooja Sharma",
+        ("Sem_3_AIDE", "AIT203"): "Dr. Ritam Sharma",
+        ("Sem_3_AIDE", "AIT205"): "Dr. Veena Khandelwal",
+        ("Sem_3_AIDE", "CST207"): "Dr. Ramesh Battula",
+        ("Sem_3_AIDE", "MAT201"): "Dr. Prashant Goyal",
+        ("Sem_3_AIDE", "HST203"): "Dr. Ankita Birla",
+        ("Sem_3_AIDE", "CSP207"): "Dr. Pooja Sharma",
+        ("Sem_3_AIDE", "AIP203"): "Dr. Pooja Sharma",
+        ("Sem_3_AIDE", "AIP205"): "Dr. Veena Khandelwal",
+        ("Sem_3_AIDE", "AIP211"): "Ms. Kalpana Pathak",
+
+        # 5th Sem
+        ("Sem_5_AIDE", "AIT301"): "Dr. Ritam Sharma",
+        ("Sem_5_AIDE", "AIT303"): "Dr. Veena Khandelwal",
+        ("Sem_5_AIDE", "AIT305"): "Ms. Kalpana Pathak",
+        ("Sem_5_AIDE", "CST301"): "Dr. Ramesh Battula",
+        ("Sem_5_AIDE", "CST303"): "Dr. Neha Agarwal",
+        ("Sem_5_AIDE", "AIT307"): "Dr. Amit Kumar",
+        ("Sem_5_AIDE", "AIP303"): "Dr. Shibna Hussain",
+        ("Sem_5_AIDE", "CSP303"): "Dr. Neha Agarwal",
+        ("Sem_5_AIDE", "AIP305"): "Dr. Priya Jain",
+
+        # 1st Sem
+        ("Sem_1_AIDE", "CST101"): "Dr. Saurabh Kumar",
+        ("Sem_1_AIDE", "ECT101"): "Dr. Vikas Gupta",
+        ("Sem_1_AIDE", "AIT101"): "Dr. Ritam Sharma",
+        ("Sem_1_AIDE", "HST101"): "Dr. Ankita Birla",
+        ("Sem_1_AIDE", "MAT101"): "Dr. Prashant Goyal",
+        ("Sem_1_AIDE", "CSP101"): "Dr. Saurabh Kumar",
+        ("Sem_1_AIDE", "AIP111"): "Dr. Amit Kumar",
+        ("Sem_1_AIDE", "ECP101"): "Dr. Vikas Gupta",
+        ("Sem_1_AIDE", "HSP101"): "Dr. Ankita Birla",
+        ("Sem_1_AIDE", "HSP111"): "Dr. Ankita Birla",
+
+        # 7th Sem
+        ("Sem_7_AIDE", "AIT401"): "Dr. Veena Khandelwal",
+        ("Sem_7_AIDE", "AIT403"): "Dr. Ritam Sharma",
+        ("Sem_7_AIDE", "CST405"): "Dr. Ramesh Battula",
+        ("Sem_7_AIDE", "AIT407"): "Dr. Amit Kumar",
+        ("Sem_7_AIDE", "AIP401"): "Dr. Pooja Sharma",
+        ("Sem_7_AIDE", "AIP403"): "Dr. Shibna Hussain",
+    }
+
+    problem = TimetableProblem(
+        name="IIIT_Kota_Odd_Semesters_2026",
+        time_structure=time_struct,
+        subjects=subjects,
+        teachers=teachers,
+        classes=classes,
+        rooms=rooms
+    )
+    problem.generate_variables(teacher_mapping=teacher_mapping)
+    return problem
+
+
 def save_datasets_to_json():
     """Serializes datasets to disk as JSON files for submission deliverables."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -218,8 +508,14 @@ def save_datasets_to_json():
     with open(large_path, "w", encoding="utf-8") as f:
         json.dump(large.to_dict(), f, indent=2)
 
-    print(f"Saved {small_path} and {large_path}")
+    iiit = get_iiit_kota_odd_sem_dataset()
+    iiit_path = DATA_DIR / "iiit_kota_odd_semesters.json"
+    with open(iiit_path, "w", encoding="utf-8") as f:
+        json.dump(iiit.to_dict(), f, indent=2)
+
+    print(f"Saved {small_path}, {large_path}, and {iiit_path}")
 
 
 if __name__ == "__main__":
     save_datasets_to_json()
+

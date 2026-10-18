@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Dict, Any
 from core.models import (
-    TimetableProblem, TimeStructure, Subject, Teacher, ClassBatch, Room
+    TimetableProblem, TimeStructure, Subject, Teacher, ClassBatch, Room, SlotAssignment
 )
 
 DATA_DIR = Path(__file__).resolve().parent
@@ -492,6 +492,57 @@ def get_iiit_kota_odd_sem_dataset() -> TimetableProblem:
     )
     problem.generate_variables(teacher_mapping=teacher_mapping)
     return problem
+
+
+def get_iiit_kota_exact_3rd_sem_template_assignment(problem: TimetableProblem) -> Dict[str, SlotAssignment]:
+    """
+    Returns the exact timetable assignment for 3rd Semester (AIDE)
+    strictly transcribed from the official IIIT Kota timetable photograph.
+    All 2-hour labs strictly scheduled in continuous blocks.
+    """
+    assignment = {}
+    
+    # Exact mapping from Photo 1 (Session July-Dec 2026, RM-241):
+    # Monday
+    assignment["Sem_3_AIDE_AIT205_s1"] = SlotAssignment("Monday", 1, "RM-241")   # AIT205 (VK)
+    assignment["Sem_3_AIDE_AIT203_s1"] = SlotAssignment("Monday", 2, "RM-241")   # AIT203 (RS)
+    assignment["Sem_3_AIDE_MAT201_s1"] = SlotAssignment("Monday", 3, "LT6")      # MAT201 (PG) Tutorial D1
+    assignment["Sem_3_AIDE_MAT201_s2"] = SlotAssignment("Monday", 4, "LT6")      # MAT201 (PG) Tutorial D2
+    # P5 is Lunch Break (1:00 PM - 2:00 PM)
+    assignment["Sem_3_AIDE_AIP203_s1"] = SlotAssignment("Monday", 7, "LAB-36")   # AIP203 Lab (PS) - Hour 1 (3-4 PM)
+    assignment["Sem_3_AIDE_AIP203_s2"] = SlotAssignment("Monday", 8, "LAB-36")   # AIP203 Lab (PS) - Hour 2 (4-5 PM)
+
+    # Tuesday
+    assignment["Sem_3_AIDE_AIT201_s1"] = SlotAssignment("Tuesday", 1, "RM-241")  # AIT201 (PS)
+    assignment["Sem_3_AIDE_MAT201_s3"] = SlotAssignment("Tuesday", 2, "RM-241")  # MAT201 (PG)
+    assignment["Sem_3_AIDE_HST203_s1"] = SlotAssignment("Tuesday", 3, "R-307")   # HST203 (AB) Tutorial D1
+    assignment["Sem_3_AIDE_HST203_s2"] = SlotAssignment("Tuesday", 4, "R-307")   # HST203 (AB) Tutorial D2
+    assignment["Sem_3_AIDE_AIT203_s2"] = SlotAssignment("Tuesday", 6, "RM-241")  # AIT203 (RS) (2-3 PM)
+    assignment["Sem_3_AIDE_CSP207_s1"] = SlotAssignment("Tuesday", 7, "LAB-36")  # CSP207 Lab (PS) - Hour 1 (3-4 PM)
+    assignment["Sem_3_AIDE_CSP207_s2"] = SlotAssignment("Tuesday", 8, "LAB-36")  # CSP207 Lab (PS) - Hour 2 (4-5 PM)
+
+    # Wednesday
+    assignment["Sem_3_AIDE_AIT201_s2"] = SlotAssignment("Wednesday", 1, "RM-241") # AIT201 (PS)
+    assignment["Sem_3_AIDE_MAT201_s4"] = SlotAssignment("Wednesday", 2, "RM-241") # MAT201 (PG)
+    assignment["Sem_3_AIDE_HST203_s3"] = SlotAssignment("Wednesday", 3, "RM-241") # HST203 (AB)
+    assignment["Sem_3_AIDE_AIT203_s3"] = SlotAssignment("Wednesday", 7, "RM-241") # AIT203 (RS) (3-4 PM)
+    assignment["Sem_3_AIDE_AIT205_s2"] = SlotAssignment("Wednesday", 8, "RM-241") # AIT205 (VK) (4-5 PM)
+
+    # Thursday
+    assignment["Sem_3_AIDE_AIT205_s3"] = SlotAssignment("Thursday", 1, "RM-241")  # AIT205 (VK)
+    assignment["Sem_3_AIDE_CST207_s1"] = SlotAssignment("Thursday", 2, "RM-241")  # CST207 (RB)
+    assignment["Sem_3_AIDE_AIT201_s3"] = SlotAssignment("Thursday", 3, "RM-241")  # AIT201 (PS)
+    assignment["Sem_3_AIDE_AIP205_s1"] = SlotAssignment("Thursday", 6, "LAB-137") # AIP205 Lab (VK+SH) - Hour 1 (2-3 PM)
+    assignment["Sem_3_AIDE_AIP205_s2"] = SlotAssignment("Thursday", 7, "LAB-137") # AIP205 Lab (VK+SH) - Hour 2 (3-4 PM)
+
+    # Friday
+    assignment["Sem_3_AIDE_CST207_s2"] = SlotAssignment("Friday", 1, "RM-241")    # CST207 (RB)
+    assignment["Sem_3_AIDE_CST207_s3"] = SlotAssignment("Friday", 2, "RM-241")    # CST207 (RB)
+    assignment["Sem_3_AIDE_HST203_s1"] = SlotAssignment("Friday", 4, "RM-241")    # HST203 (AB) (12-1 PM)
+    assignment["Sem_3_AIDE_AIP211_s1"] = SlotAssignment("Friday", 7, "LAB-32")    # AIP211 Lab (KP) - Hour 1 (3-4 PM)
+    assignment["Sem_3_AIDE_AIP211_s2"] = SlotAssignment("Friday", 8, "LAB-32")    # AIP211 Lab (KP) - Hour 2 (4-5 PM)
+
+    return assignment
 
 
 def save_datasets_to_json():

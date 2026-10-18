@@ -22,7 +22,10 @@ from typing import Dict, Optional, List
 
 from core.models import TimetableProblem, SlotAssignment, SessionVariable
 from core.constraints import ConstraintChecker
-from data.datasets import get_small_dataset, get_large_dataset, get_iiit_kota_odd_sem_dataset
+from data.datasets import (
+    get_small_dataset, get_large_dataset, get_iiit_kota_odd_sem_dataset,
+    get_iiit_kota_exact_3rd_sem_template_assignment
+)
 from solvers.backtracking import PlainBacktrackingSolver, HeuristicBacktrackingSolver
 from solvers.min_conflicts import MinConflictsSolver
 from solvers.simulated_annealing import SimulatedAnnealingSolver
@@ -210,7 +213,33 @@ with tab1:
         st.write(f"**Total Classes**: {len(problem.classes)} | **Teachers**: {len(problem.teachers)}")
         st.write(f"**Rooms**: {len(problem.rooms)} | **Sessions to Schedule**: {len(problem.variables)}")
 
-        generate_btn = st.button("⚡ Generate Timetable", type="primary", use_container_width=True)
+        generate_btn = st.button("⚡ Generate AI Optimal Timetable", type="primary", use_container_width=True)
+
+        load_exact_btn = False
+        if "IIIT_Kota" in problem.name:
+            load_exact_btn = st.button("📋 Load Published 3rd Sem Timetable (Photo 1)", use_container_width=True)
+
+    if load_exact_btn:
+        exact_assignment = get_iiit_kota_exact_3rd_sem_template_assignment(problem)
+        checker = ConstraintChecker(problem)
+        h_viol, conflicts = checker.count_hard_violations(exact_assignment)
+        s_pen, _, _ = checker.count_soft_violations(exact_assignment)
+        from solvers.base import SolverResult
+
+        st.session_state.assignment = exact_assignment
+        st.session_state.solver_result = SolverResult(
+            algorithm_name="Official Published Timetable (Photo 1 - 3rd Sem)",
+            assignment=exact_assignment,
+            time_taken=0.001,
+            nodes_expanded=len(exact_assignment),
+            iterations=len(exact_assignment),
+            hard_violations=h_viol,
+            soft_penalty=s_pen,
+            total_cost=float(s_pen),
+            success=h_viol == 0,
+            conflict_messages=conflicts
+        )
+        st.rerun()
 
     if generate_btn:
         checker = ConstraintChecker(problem)

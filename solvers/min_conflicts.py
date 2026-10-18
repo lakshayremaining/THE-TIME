@@ -44,19 +44,38 @@ class MinConflictsSolver(BaseSolver):
     def _generate_initial_assignment(self) -> Dict[str, SlotAssignment]:
         """
         Creates a complete assignment by choosing a random valid slot (unary-filtered)
-        for every variable.
+        for every variable, pairing 2-hour lab sessions consecutively.
         """
         assignment = {}
+        assigned = set()
         for var in self.problem.variables:
-            valid_slots = self.domains[var.var_id]
-            assignment[var.var_id] = random.choice(valid_slots)
+            if var.var_id in assigned:
+                continue
+
+            if var.is_lab and var.consecutive_with:
+                partner_id = var.consecutive_with
+                valid_pairs = []
+                for s1 in self.domains[var.var_id]:
+                    for s2 in self.domains.get(partner_id, []):
+                        if s1.day == s2.day and s1.room_name == s2.room_name and abs(s1.period - s2.period) == 1:
+                            valid_pairs.append((s1, s2))
+                if valid_pairs:
+                    s1, s2 = random.choice(valid_pairs)
+                    assignment[var.var_id] = s1
+                    assignment[partner_id] = s2
+                    assigned.add(var.var_id)
+                    assigned.add(partner_id)
+                    continue
+
+            assignment[var.var_id] = random.choice(self.domains[var.var_id])
+            assigned.add(var.var_id)
         return assignment
 
     def _get_conflicted_variables(
         self, assignment: Dict[str, SlotAssignment]
     ) -> List[str]:
         """
-        Returns the list of var_ids currently involved in at least one hard clash.
+        Returns the list of var_ids currently involved in at least one hard clash or split lab.
         """
         # (day, period, teacher) -> list of var_ids
         teacher_map = {}
@@ -87,6 +106,15 @@ class MinConflictsSolver(BaseSolver):
                 conflicted_set.add(room_map[r_key])
             else:
                 room_map[r_key] = var_id
+
+        # Check for split 2-hour lab pairs
+        for var in self.problem.variables:
+            if var.is_lab and var.consecutive_with and var.var_id in assignment and var.consecutive_with in assignment:
+                s1 = assignment[var.var_id]
+                s2 = assignment[var.consecutive_with]
+                if s1.day != s2.day or s1.room_name != s2.room_name or abs(s1.period - s2.period) != 1:
+                    conflicted_set.add(var.var_id)
+                    conflicted_set.add(var.consecutive_with)
 
         return list(conflicted_set)
 
@@ -172,6 +200,37 @@ class MinConflictsSolver(BaseSolver):
 
                 # Pick a random conflicted variable
                 chosen_var_id = random.choice(conflicted_vars)
+                chosen_var = self.problem.variables_dict[chosen_var_id]
+
+                # If this is part of a 2-hour lab, move the pair atomically
+                if chosen_var.is_lab and chosen_var.consecutive_with:
+                    partner_id = chosen_var.consecutive_with
+                    candidate_pairs = []
+                    for s1 in self.domains[chosen_var_id]:
+                        for s2 in self.domains.get(partner_id, []):
+                            if s1.day == s2.day and s1.room_name == s2.room_name and abs(s1.period - s2.period) == 1:
+                                candidate_pairs.append((s1, s2))
+
+                    if candidate_pairs:
+                        if random.random() < self.random_walk_prob:
+                            s1, s2 = random.choice(candidate_pairs)
+                        else:
+                            min_conf = float("inf")
+                            best_pairs = []
+                            for s1, s2 in candidate_pairs:
+                                c = self._count_var_conflicts(chosen_var_id, s1, assignment) + self._count_var_conflicts(partner_id, s2, assignment)
+                                if c < min_conf:
+                                    min_conf = c
+                                    best_pairs = [(s1, s2)]
+                                elif c == min_conf:
+                                    best_pairs.append((s1, s2))
+                            s1, s2 = random.choice(best_pairs)
+
+                        assignment[chosen_var_id] = s1
+                        assignment[partner_id] = s2
+                        continue
+
+                # Standard single-period move for theory sessions
                 candidate_slots = self.domains[chosen_var_id]
 
                 # Random walk with probability p to escape local optima

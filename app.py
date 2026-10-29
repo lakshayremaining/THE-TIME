@@ -23,7 +23,7 @@ from typing import Dict, Optional, List
 from core.models import TimetableProblem, SlotAssignment, SessionVariable
 from core.constraints import ConstraintChecker
 from data.datasets import (
-    get_small_dataset, get_large_dataset, get_iiit_kota_odd_sem_dataset,
+    get_iiit_kota_odd_sem_dataset,
     get_iiit_kota_exact_3rd_sem_template_assignment
 )
 from solvers.backtracking import PlainBacktrackingSolver, HeuristicBacktrackingSolver
@@ -88,6 +88,14 @@ st.markdown("""
         margin: 10px 0;
         color: #166534;
     }
+    .app-footer {
+        margin-top: 2.5rem;
+        padding: 1rem 0;
+        border-top: 1px solid #E2E8F0;
+        color: #64748B;
+        text-align: center;
+        font-size: 0.9rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -101,21 +109,48 @@ def init_session_state():
         st.session_state.solver_result = None
     if "manual_history" not in st.session_state:
         st.session_state.manual_history = []
+    if "manual_fixed_slots" not in st.session_state:
+        st.session_state.manual_fixed_slots = {}
 
 
 init_session_state()
 
 # ----------------- SIDEBAR -----------------
-st.sidebar.image("https://img.icons8.com/color/96/calendar--v1.png", width=64)
+st.sidebar.image("assets/iiit-kota-logo.png", width=100)
 st.sidebar.title("Configuration & Data")
+
+if "show_project_changes" not in st.session_state:
+    st.session_state.show_project_changes = False
+
+if st.sidebar.button("What changed with this project", use_container_width=True):
+    st.session_state.show_project_changes = True
+
+if st.session_state.show_project_changes:
+    st.title("What changed with this project")
+    before_col, after_col = st.columns(2)
+    with before_col:
+        st.image(
+            "assets/before-timetable-small.jpg",
+            width=260,
+            caption="Before this solution: time manage nhi ho rha yar"
+        )
+    with after_col:
+        st.image(
+            "assets/after-timetable-small.jpg",
+            width=260,
+            caption="After this solution: time folllows maa bratha"
+        )
+    if st.button("← Back to scheduler", type="primary"):
+        st.session_state.show_project_changes = False
+        st.rerun()
+    st.markdown('<div class="app-footer">Made by Lakshay Indoriya</div>', unsafe_allow_html=True)
+    st.stop()
 
 # Dataset Selection
 dataset_choice = st.sidebar.selectbox(
     "Choose Dataset",
     [
         "IIIT Kota - Odd Semesters (Sem 1, 3, 5, 7 - Real Timetable)",
-        "Small Dataset (3 Classes, 6 Teachers, 4 Rooms, 5x6)",
-        "Large Dataset (8 Classes, 16 Teachers, 9 Rooms, 5x7)",
         "Upload Custom JSON Dataset"
     ],
     index=0
@@ -126,18 +161,7 @@ if dataset_choice.startswith("IIIT Kota"):
         st.session_state.problem = get_iiit_kota_odd_sem_dataset()
         st.session_state.assignment = None
         st.session_state.solver_result = None
-        st.rerun()
-elif dataset_choice.startswith("Small"):
-    if st.sidebar.button("🔄 Reload Small Dataset") or st.session_state.problem.name != "Small_Dataset_3x6x4":
-        st.session_state.problem = get_small_dataset()
-        st.session_state.assignment = None
-        st.session_state.solver_result = None
-        st.rerun()
-elif dataset_choice.startswith("Large"):
-    if st.sidebar.button("🔄 Load Large Dataset") or st.session_state.problem.name != "Large_Dataset_8x7x9":
-        st.session_state.problem = get_large_dataset()
-        st.session_state.assignment = None
-        st.session_state.solver_result = None
+        st.session_state.manual_fixed_slots = {}
         st.rerun()
 else:
     uploaded_file = st.sidebar.file_uploader("Upload JSON problem file", type=["json"])
@@ -146,6 +170,7 @@ else:
             data = json.load(uploaded_file)
             st.session_state.problem = TimetableProblem.from_dict(data)
             st.session_state.assignment = None
+            st.session_state.manual_fixed_slots = {}
             st.sidebar.success(f"Loaded '{st.session_state.problem.name}' successfully!")
         except Exception as e:
             st.sidebar.error(f"Error loading JSON: {e}")
@@ -178,7 +203,7 @@ algo_choice = st.sidebar.selectbox(
 
 # Hyperparameter Controls
 with st.sidebar.expander("⚙️ Algorithm Hyperparameters", expanded=False):
-    timeout_sec = st.slider("CSP Timeout (seconds)", 5, 60, 25)
+    timeout_sec = st.slider("Feasible Schedule Search Limit (seconds)", 5, 60, 25, help="Used by backtracking and to construct a conflict-free starting schedule for Hill Climbing and Simulated Annealing.")
     max_iters = st.slider("Max Iterations (Local Search)", 500, 6000, 3000, step=250)
     random_walk_p = st.slider("Min-Conflicts Random Walk Prob", 0.0, 0.3, 0.10, step=0.02)
     init_temp = st.slider("SA Initial Temperature", 10.0, 200.0, 100.0, step=10.0)
@@ -188,12 +213,16 @@ st.sidebar.markdown("---")
 st.sidebar.info("💡 **Bonus Included:**\n- Simulated Annealing (+6)\n- Hybrid CSP+SA (+6)\n- Real-time Conflict Detector\n- Multi-tab Excel Export")
 
 # ----------------- MAIN CONTENT -----------------
-st.markdown('<div class="main-header">📅 AI-Based Timetable Scheduler</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="sub-header">Automated College Scheduling using Constraint Satisfaction (CSP), '
-    'Min-Conflicts, Simulated Annealing, and Hybrid Metaheuristics</div>',
-    unsafe_allow_html=True
-)
+header_logo, header_title = st.columns([1, 9])
+with header_logo:
+    st.image("assets/iiit-kota-logo.png", width=82)
+with header_title:
+    st.markdown('<div class="main-header">AI-Based Timetable Scheduler</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sub-header">Automated College Scheduling using Constraint Satisfaction (CSP), '
+        'Min-Conflicts, Simulated Annealing, and Hybrid Metaheuristics</div>',
+        unsafe_allow_html=True
+    )
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🚀 Schedule Generator",
@@ -247,7 +276,7 @@ with tab1:
             start_t = time.perf_counter()
 
             if algo_choice == "Backtracking (Baseline)":
-                solver = PlainBacktrackingSolver(problem, timeout_seconds=timeout_sec)
+                solver = PlainBacktrackingSolver(problem, timeout_seconds=timeout_sec, fixed_assignments=st.session_state.manual_fixed_slots)
             elif algo_choice.startswith("Backtracking (+ Heuristics"):
                 solver = HeuristicBacktrackingSolver(
                     problem,
@@ -255,30 +284,36 @@ with tab1:
                     use_degree=True,
                     use_forward_checking=True,
                     use_lcv=True,
-                    timeout_seconds=timeout_sec
+                    timeout_seconds=timeout_sec,
+                    fixed_assignments=st.session_state.manual_fixed_slots
                 )
             elif algo_choice.startswith("Min-Conflicts"):
                 solver = MinConflictsSolver(
                     problem,
                     max_iterations=max_iters,
-                    random_walk_prob=random_walk_p
+                    random_walk_prob=random_walk_p,
+                    fixed_assignments=st.session_state.manual_fixed_slots
                 )
             elif algo_choice.startswith("Simulated Annealing"):
                 solver = SimulatedAnnealingSolver(
                     problem,
                     initial_temperature=init_temp,
                     cooling_rate=cooling_rate,
-                    max_total_steps=max_iters
+                    max_total_steps=max_iters,
+                    initialization_timeout=timeout_sec,
+                    fixed_assignments=st.session_state.manual_fixed_slots
                 )
             elif algo_choice.startswith("Hybrid CSP"):
                 solver = HybridCSPSolver(
                     problem,
                     sa_cooling_rate=cooling_rate,
                     sa_initial_temp=init_temp / 2.0,
-                    sa_max_steps=max_iters // 2
+                    sa_max_steps=max_iters // 2,
+                    csp_timeout_seconds=timeout_sec,
+                    fixed_assignments=st.session_state.manual_fixed_slots
                 )
             else:  # Hill Climbing
-                solver = HillClimbingSolver(problem, max_iterations=max_iters)
+                solver = HillClimbingSolver(problem, max_iterations=max_iters, initialization_timeout=timeout_sec, fixed_assignments=st.session_state.manual_fixed_slots)
 
             result = solver.solve()
             st.session_state.solver_result = result
@@ -288,15 +323,17 @@ with tab1:
     assignment = st.session_state.assignment
 
     if res is not None and assignment is not None:
+        schedule_complete = res.success and res.hard_violations == 0 and len(assignment) == len(problem.variables)
         with col_stats:
             st.subheader("Performance Metrics")
             m1, m2, m3, m4 = st.columns(4)
             m1.metric("Execution Time", f"{res.time_taken:.3f} s")
             m2.metric("Nodes / Steps", f"{res.nodes_expanded}")
-            m3.metric("Hard Violations", f"{res.hard_violations}", delta=None if res.hard_violations == 0 else "Clash!", delta_color="inverse")
+            hard_metric = "N/A" if res.metadata.get("initialization_failed") else str(res.hard_violations)
+            m3.metric("Hard Violations", hard_metric, delta=None if hard_metric in ("N/A", "0") else "Clash!", delta_color="inverse")
             m4.metric("Soft Penalty", f"{res.soft_penalty}")
 
-            if res.hard_violations == 0:
+            if schedule_complete:
                 st.markdown(
                     f'<div class="success-alert">✅ <b>Feasible Timetable Generated!</b> '
                     f'All {len(problem.variables)} sessions scheduled with 0 hard conflicts. '
@@ -304,42 +341,66 @@ with tab1:
                     unsafe_allow_html=True
                 )
             else:
-                st.markdown(
-                    f'<div class="conflict-alert">⚠️ <b>Incomplete / Conflicts Present:</b> '
-                    f'{res.hard_violations} hard constraint violation(s) detected.</div>',
-                    unsafe_allow_html=True
-                )
+                unscheduled = max(0, len(problem.variables) - len(assignment))
+                if res.metadata.get("initialization_failed"):
+                    st.markdown(
+                        f'<div class="conflict-alert">⚠️ <b>Could not build a complete feasible starting timetable.</b> '
+                        f'{unscheduled} session(s) remain unscheduled.</div>',
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.markdown(
+                        f'<div class="conflict-alert">⚠️ <b>No complete conflict-free timetable was found.</b> '
+                        f'{unscheduled} session(s) unscheduled; {res.hard_violations} hard violation(s) detected.</div>',
+                        unsafe_allow_html=True
+                    )
+                if res.conflict_messages:
+                    with st.expander("Why the solver stopped"):
+                        for message in res.conflict_messages[:12]:
+                            st.write(f"- {message}")
 
-        st.markdown("---")
-        st.subheader("📥 Export Schedule")
-        e_col1, e_col2, _ = st.columns([1, 1, 2])
+        if assignment:
+            st.markdown("---")
+            st.subheader("📥 Export Schedule")
+            e_col1, e_col2, _ = st.columns([1, 1, 2])
 
-        # CSV Download
-        csv_str = export_timetable_to_csv_string(problem, assignment)
-        e_col1.download_button(
-            label="📄 Download CSV",
-            data=csv_str,
-            file_name=f"timetable_{problem.name.lower()}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
+            csv_str = export_timetable_to_csv_string(problem, assignment)
+            e_col1.download_button(
+                label="📄 Download CSV",
+                data=csv_str,
+                file_name=f"timetable_{problem.name.lower()}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
 
-        # Excel Download
-        excel_bytes = export_timetable_to_excel_bytes(problem, assignment)
-        e_col2.download_button(
-            label="📊 Download Excel (.xlsx)",
-            data=excel_bytes,
-            file_name=f"timetable_{problem.name.lower()}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
-        )
+            excel_bytes = export_timetable_to_excel_bytes(problem, assignment)
+            e_col2.download_button(
+                label="📊 Download Excel (.xlsx)",
+                data=excel_bytes,
+                file_name=f"timetable_{problem.name.lower()}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
 
 # ----------------- TAB 2: TIMETABLE VIEWS -----------------
 with tab2:
-    if assignment is None:
-        st.info("👉 Please generate a timetable in the **Schedule Generator** tab first!")
+    # Read directly from session state so a schedule created later in this run
+    # (for example, from the Manual Editor tab) is always the one displayed.
+    view_assignment = st.session_state.get("assignment")
+    if not view_assignment:
+        last_result = st.session_state.get("solver_result")
+        if last_result and last_result.metadata.get("initialization_failed"):
+            st.warning("A feasible timetable was not generated. Review the solver message in the Schedule Generator tab.")
+        else:
+            st.info("👉 Please generate a timetable in the **Schedule Generator** tab first!")
     else:
-        view_mode = st.radio("Select View Mode", ["By Class Batch", "By Teacher", "By Room"], horizontal=True)
+        if st.session_state.get("manual_fixed_slots"):
+            st.success("Showing the latest manually re-scheduled timetable. Your fixed session slot is included below.")
+        view_mode = st.radio(
+            "Select View Mode",
+            ["By Class Batch", "By Teacher", "All Teachers", "By Room"],
+            horizontal=True
+        )
 
         var_dict = {v.var_id: v for v in problem.variables}
         days = problem.time_structure.days
@@ -374,7 +435,7 @@ with tab2:
                         # Find session
                         matched = [
                             f"{var_dict[vid].subject_code}\n({var_dict[vid].teacher_name}, {slot.room_name})"
-                            for vid, slot in assignment.items()
+                            for vid, slot in view_assignment.items()
                             if var_dict[vid].class_name == selected_class and slot.day == day and slot.period == p
                         ]
                         grid_data[col_key].append("\n".join(matched) if matched else "—")
@@ -396,13 +457,43 @@ with tab2:
                     else:
                         matched = [
                             f"{var_dict[vid].class_name}: {var_dict[vid].subject_code} ({slot.room_name})"
-                            for vid, slot in assignment.items()
+                            for vid, slot in view_assignment.items()
                             if var_dict[vid].teacher_name == selected_teacher and slot.day == day and slot.period == p
                         ]
                         grid_data[col_key].append("\n".join(matched) if matched else "—")
 
             df = pd.DataFrame(grid_data, index=days)
             st.dataframe(df, use_container_width=True, height=290)
+
+        elif view_mode == "All Teachers":
+            st.caption("Weekly schedules for every teacher. Each box shows the class, subject, and room for each period.")
+            teacher_names = list(problem.teachers.keys())
+            for row_start in range(0, len(teacher_names), 2):
+                teacher_cols = st.columns(2)
+                for col, teacher_name in zip(teacher_cols, teacher_names[row_start:row_start + 2]):
+                    t_obj = problem.teachers[teacher_name]
+                    teacher_grid = {get_p_name(p): [] for p in periods}
+                    for day in days:
+                        for p in periods:
+                            col_key = get_p_name(p)
+                            if (day, p) in t_obj.unavailable_slots:
+                                teacher_grid[col_key].append("⛔ Unavailable")
+                            else:
+                                matched = [
+                                    f"{var_dict[vid].class_name}: {var_dict[vid].subject_code} ({slot.room_name})"
+                                    for vid, slot in view_assignment.items()
+                                    if var_dict[vid].teacher_name == teacher_name and slot.day == day and slot.period == p
+                                ]
+                                teacher_grid[col_key].append("\n".join(matched) if matched else "—")
+
+                    teacher_df = pd.DataFrame(teacher_grid, index=days)
+                    with col.container(border=True):
+                        st.markdown(f"#### 👨‍🏫 {t_obj.name}")
+                        st.caption(
+                            f"{teacher_name} · Max weekly load: {t_obj.max_weekly_load} hrs · "
+                            f"Teaches: {', '.join(t_obj.subjects_can_teach)}"
+                        )
+                        st.dataframe(teacher_df, use_container_width=True, height=250)
 
         else:  # By Room
             selected_room = st.selectbox("Select Room", list(problem.rooms.keys()))
@@ -415,7 +506,7 @@ with tab2:
                     col_key = get_p_name(p)
                     matched = [
                         f"{var_dict[vid].class_name} - {var_dict[vid].subject_code} ({var_dict[vid].teacher_name})"
-                        for vid, slot in assignment.items()
+                        for vid, slot in view_assignment.items()
                         if slot.room_name == selected_room and slot.day == day and slot.period == p
                     ]
                     grid_data[col_key].append("\n".join(matched) if matched else "—")
@@ -427,11 +518,11 @@ with tab2:
 with tab3:
     st.subheader("✏️ Interactive Manual Editing & Conflict Flagger")
     st.markdown(
-        "Move any session to another time slot or room. The application immediately evaluates "
-        "all **Hard Constraints (H1-H9)** and flags any conflict in real time."
+        "Choose a new day, period, and room for a session. That slot is kept fixed while the selected "
+        "algorithm re-schedules the other sessions; a conflict-free result appears in **Timetable Views**."
     )
 
-    if assignment is None:
+    if not assignment:
         st.info("👉 Please generate a timetable first to enable manual editing.")
     else:
         var_dict = {v.var_id: v for v in problem.variables}
@@ -453,13 +544,42 @@ with tab3:
             m_period = st.selectbox("New Period", list(range(1, problem.time_structure.periods_per_day + 1)), index=current_slot.period - 1)
             m_room = st.selectbox("New Room", list(problem.rooms.keys()), index=list(problem.rooms.keys()).index(current_slot.room_name))
 
-        if st.button("🚀 Apply Move & Check Conflicts", type="primary"):
+        if st.button("🚀 Apply Move & Re-schedule", type="primary"):
             new_slot = SlotAssignment(day=m_day, period=m_period, room_name=m_room)
-            st.session_state.assignment[chosen_var_id] = new_slot
-            st.session_state.manual_history.append((chosen_var_id, current_slot, new_slot))
+            fixed_slots = dict(st.session_state.manual_fixed_slots)
+            fixed_slots[chosen_var_id] = new_slot
+            with st.spinner(f"Keeping {chosen_var_id} fixed at {m_day} P{m_period} in {m_room} and re-scheduling the other sessions..."):
+                if algo_choice == "Backtracking (Baseline)":
+                    solver = PlainBacktrackingSolver(problem, timeout_seconds=timeout_sec, fixed_assignments=fixed_slots)
+                elif algo_choice.startswith("Backtracking (+ Heuristics"):
+                    solver = HeuristicBacktrackingSolver(problem, use_mrv=True, use_degree=True, use_forward_checking=True, use_lcv=True, timeout_seconds=timeout_sec, fixed_assignments=fixed_slots)
+                elif algo_choice.startswith("Min-Conflicts"):
+                    solver = MinConflictsSolver(problem, max_iterations=max_iters, random_walk_prob=random_walk_p, fixed_assignments=fixed_slots)
+                elif algo_choice.startswith("Simulated Annealing"):
+                    solver = SimulatedAnnealingSolver(problem, initial_temperature=init_temp, cooling_rate=cooling_rate, max_total_steps=max_iters, initialization_timeout=timeout_sec, fixed_assignments=fixed_slots)
+                elif algo_choice.startswith("Hybrid CSP"):
+                    solver = HybridCSPSolver(problem, sa_cooling_rate=cooling_rate, sa_initial_temp=init_temp / 2.0, sa_max_steps=max_iters // 2, csp_timeout_seconds=timeout_sec, fixed_assignments=fixed_slots)
+                else:
+                    solver = HillClimbingSolver(problem, max_iterations=max_iters, initialization_timeout=timeout_sec, fixed_assignments=fixed_slots)
+
+                result = solver.solve()
+                if result.success and result.hard_violations == 0 and result.assignment.get(chosen_var_id) == new_slot:
+                    st.session_state.manual_fixed_slots = fixed_slots
+                    st.session_state.assignment = result.assignment
+                    st.session_state.solver_result = result
+                    st.session_state.manual_history.append((chosen_var_id, current_slot, new_slot))
+                    st.session_state.manual_schedule_message = ("success", f"{chosen_var_id} fixed at {m_day} P{m_period} in {m_room}; remaining sessions re-scheduled without hard conflicts.")
+                else:
+                    details = " ".join(result.conflict_messages[:3])
+                    reason = details or "The search ended without a complete conflict-free schedule."
+                    st.session_state.manual_schedule_message = ("error", f"No conflict-free timetable could be found with this slot fixed. The previous timetable is still shown. {reason}")
+            st.rerun()
 
         # Check constraints immediately
         checker = ConstraintChecker(problem)
+        message = st.session_state.get("manual_schedule_message")
+        if message:
+            (st.success if message[0] == "success" else st.error)(message[1])
         h_viol, conflicts = checker.count_hard_violations(st.session_state.assignment)
         s_pen, s_breakdown, soft_descs = checker.count_soft_violations(st.session_state.assignment)
 
@@ -548,3 +668,5 @@ with tab5:
             for s in problem.subjects.values()
         ]
         st.dataframe(pd.DataFrame(subjs_data), use_container_width=True)
+
+st.markdown('<div class="app-footer">Made by Lakshay Indoriya</div>', unsafe_allow_html=True)

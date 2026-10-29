@@ -1,6 +1,6 @@
 """
 tests/test_scheduler.py
-Unit tests verifying constraint satisfaction, all 5 algorithms, and edge cases.
+Unit tests verifying constraint satisfaction, all six algorithms, and edge cases.
 """
 
 import unittest
@@ -18,6 +18,7 @@ from solvers.backtracking import PlainBacktrackingSolver, HeuristicBacktrackingS
 from solvers.min_conflicts import MinConflictsSolver
 from solvers.simulated_annealing import SimulatedAnnealingSolver
 from solvers.hybrid import HybridCSPSolver
+from solvers.hill_climbing import HillClimbingSolver
 from export.excel_exporter import export_timetable_to_excel_bytes
 from export.csv_exporter import export_timetable_to_csv_string
 
@@ -39,6 +40,12 @@ class TestTimetableScheduler(unittest.TestCase):
         self.assertTrue(res.success)
         self.assertEqual(res.hard_violations, 0)
         self.assertEqual(len(res.assignment), 47)
+
+    def test_plain_backtracking(self):
+        res = PlainBacktrackingSolver(self.small_problem, timeout_seconds=10.0).solve()
+        self.assertTrue(res.success)
+        self.assertEqual(res.hard_violations, 0)
+        self.assertEqual(len(res.assignment), len(self.small_problem.variables))
 
     def test_min_conflicts(self):
         solver = MinConflictsSolver(self.small_problem, max_iterations=2000, random_seed=42)
@@ -69,12 +76,43 @@ class TestTimetableScheduler(unittest.TestCase):
         self.assertTrue(res.success)
         self.assertEqual(res.hard_violations, 0)
 
+    def test_hill_climbing_returns_complete_feasible_schedule(self):
+        solver = HillClimbingSolver(
+            self.small_problem,
+            max_iterations=500,
+            sample_neighborhood_size=40,
+            random_seed=42,
+        )
+        res = solver.solve()
+        self.assertTrue(res.success, res.conflict_messages)
+        self.assertEqual(res.hard_violations, 0)
+        self.assertEqual(len(res.assignment), len(self.small_problem.variables))
+        self.assertTrue(res.metadata.get("feasible_start"))
+
+    def test_hill_climbing_preserves_a_pinned_session(self):
+        initial = HeuristicBacktrackingSolver(self.small_problem, timeout_seconds=10.0).solve()
+        self.assertTrue(initial.success)
+        theory_var = next(v for v in self.small_problem.variables if not v.is_lab)
+        new_slot = next(
+            slot for slot in self.small_problem.get_domain_for_variable(theory_var)
+            if slot != initial.assignment[theory_var.var_id]
+        )
+        result = HillClimbingSolver(
+            self.small_problem,
+            max_iterations=100,
+            sample_neighborhood_size=20,
+            fixed_assignments={theory_var.var_id: new_slot},
+            random_seed=42,
+        ).solve()
+        self.assertTrue(result.success, result.conflict_messages)
+        self.assertEqual(result.assignment[theory_var.var_id], new_slot)
+
     def test_iiit_kota_odd_sem_solvability(self):
         from data.datasets import get_iiit_kota_odd_sem_dataset
         iiit = get_iiit_kota_odd_sem_dataset()
         valid, errors = iiit.validate_input()
         self.assertTrue(valid, f"Validation errors: {errors}")
-        self.assertEqual(len(iiit.variables), 96)
+        self.assertEqual(len(iiit.variables), 97)
 
         # Verify Min-Conflicts solves it
         solver = MinConflictsSolver(iiit, max_iterations=2000, random_seed=42)
@@ -86,7 +124,7 @@ class TestTimetableScheduler(unittest.TestCase):
         solver = HeuristicBacktrackingSolver(self.small_problem)
         res = solver.solve()
         csv_str = export_timetable_to_csv_string(self.small_problem, res.assignment)
-        self.assertIn("Class,Subject,Teacher", csv_str)
+        self.assertIn("Class,Subject Code,Subject Name,Faculty", csv_str)
 
         excel_bytes = export_timetable_to_excel_bytes(self.small_problem, res.assignment)
         self.assertGreater(len(excel_bytes), 1000)

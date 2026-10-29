@@ -29,6 +29,18 @@ class BaseSolver(ABC):
     def __init__(self, problem: TimetableProblem, **kwargs):
         self.problem = problem
         self.kwargs = kwargs
+        self.fixed_assignments: Dict[str, SlotAssignment] = kwargs.get("fixed_assignments", {}) or {}
+
+    def get_domains(self) -> Dict[str, List[SlotAssignment]]:
+        """Build unary-feasible domains, restricting manually pinned sessions."""
+        domains = {
+            v.var_id: self.problem.get_domain_for_variable(v)
+            for v in self.problem.variables
+        }
+        for var_id, slot in self.fixed_assignments.items():
+            if var_id in domains:
+                domains[var_id] = [slot] if slot in domains[var_id] else []
+        return domains
 
     @abstractmethod
     def solve(self) -> SolverResult:

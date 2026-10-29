@@ -95,6 +95,7 @@ Where:
   - **Random Restart**: If no improvement is achieved for 300 iterations, the assignment is re-initialized with a new random seed.
 
 ### 3.3 Algorithm 3: Simulated Annealing (+6 Bonus Marks)
+- **Feasible Initialization**: Builds a complete conflict-free seed with Min-Conflicts and falls back to heuristic CSP if needed. Infeasible neighbors are rejected so optimization stays on the feasible search space.
 - **Neighborhood Operators**:
   1. *Move*: Reassign a single session to a random valid slot (70% probability).
   2. *Swap*: Exchange the time/room assignments of two sessions (20% probability).
@@ -110,11 +111,13 @@ Where:
 - **Advantage**: Combines the mathematical guarantee of exact CSP search with the quality optimization of metaheuristics.
 
 ### 3.5 Algorithm 5: Hill Climbing (Baseline Local Search)
-- Evaluates candidate neighborhood moves greedily, accepting only strictly improving moves ($\Delta E < 0$). Terminates upon encountering local optima or plateaus.
+- Builds a complete feasible seed with Min-Conflicts, then heuristic CSP if needed. Samples single-session moves, compatible swaps, and whole lab-block moves; accepts only conflict-free moves that strictly improve the soft penalty. Terminates at a local optimum or iteration limit. It does not guarantee a global soft-score optimum.
 
 ---
 
 ## 4. Experimental Results and Comparative Analysis
+
+> The benchmark figures below are historical results from the earlier solver behavior. The current app hides the Small/Large datasets from its selector, and feasible initialization and local-search neighborhoods have changed. Rerun the benchmark before presenting these values as current measurements.
 
 ### 4.1 Benchmark Evaluation Table (10 Runs Average)
 

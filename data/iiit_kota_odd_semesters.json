@@ -90,7 +90,7 @@
     "AIP211": {
       "code": "AIP211",
       "name": "Web Development Lab",
-      "weekly_hours": 2,
+      "weekly_hours": 3,
       "is_lab": true,
       "requires_consecutive": true
     },

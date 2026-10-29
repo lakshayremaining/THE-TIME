@@ -37,9 +37,7 @@ class MinConflictsSolver(BaseSolver):
         self.max_restarts = max_restarts
         self.restart_patience = restart_patience
         self.random_seed = random_seed
-        self.domains: Dict[str, List[SlotAssignment]] = {
-            v.var_id: self.problem.get_domain_for_variable(v) for v in self.problem.variables
-        }
+        self.domains: Dict[str, List[SlotAssignment]] = self.get_domains()
 
     def _generate_initial_assignment(self) -> Dict[str, SlotAssignment]:
         """
@@ -48,16 +46,20 @@ class MinConflictsSolver(BaseSolver):
         """
         assignment = {}
         assigned = set()
+        assignment.update(self.fixed_assignments)
+        assigned.update(self.fixed_assignments)
         for var in self.problem.variables:
             if var.var_id in assigned:
                 continue
 
             if var.is_lab and var.consecutive_with:
                 partner_id = var.consecutive_with
+                partner_var = next(v for v in self.problem.variables if v.var_id == partner_id)
                 valid_pairs = []
                 for s1 in self.domains[var.var_id]:
                     for s2 in self.domains.get(partner_id, []):
-                        if s1.day == s2.day and s1.room_name == s2.room_name and abs(s1.period - s2.period) == 1:
+                        expected_period = s1.period + (partner_var.block_offset - var.block_offset)
+                        if s1.day == s2.day and s1.room_name == s2.room_name and s2.period == expected_period:
                             valid_pairs.append((s1, s2))
                 if valid_pairs:
                     s1, s2 = random.choice(valid_pairs)
@@ -112,7 +114,11 @@ class MinConflictsSolver(BaseSolver):
             if var.is_lab and var.consecutive_with and var.var_id in assignment and var.consecutive_with in assignment:
                 s1 = assignment[var.var_id]
                 s2 = assignment[var.consecutive_with]
-                if s1.day != s2.day or s1.room_name != s2.room_name or abs(s1.period - s2.period) != 1:
+                var_map = self.problem.variables_dict
+                expected_period = s1.period + (
+                    var_map[var.consecutive_with].block_offset - var.block_offset
+                )
+                if s1.day != s2.day or s1.room_name != s2.room_name or s2.period != expected_period:
                     conflicted_set.add(var.var_id)
                     conflicted_set.add(var.consecutive_with)
 
@@ -148,6 +154,20 @@ class MinConflictsSolver(BaseSolver):
         start_time = time.perf_counter()
         self.problem.variables_dict = {v.var_id: v for v in self.problem.variables}
 
+        empty_domains = [var_id for var_id, domain in self.domains.items() if not domain]
+        if empty_domains:
+            _, conflicts = self.checker.count_hard_violations(self.fixed_assignments)
+            conflicts.insert(0, f"No valid slots are available for: {', '.join(empty_domains[:8])}")
+            return SolverResult(
+                algorithm_name="Min-Conflicts Local Search",
+                assignment=dict(self.fixed_assignments),
+                time_taken=time.perf_counter() - start_time,
+                hard_violations=max(1, len(conflicts)),
+                success=False,
+                conflict_messages=conflicts,
+                metadata={"initialization_failed": True},
+            )
+
         best_assignment: Optional[Dict[str, SlotAssignment]] = None
         best_cost = float("inf")
         best_hard_viol = 999999
@@ -174,7 +194,7 @@ class MinConflictsSolver(BaseSolver):
                     best_assignment = dict(assignment)
                     stagnation_counter = 0
 
-                if h_viol == 0:
+                if h_viol == 0 and len(assignment) == len(self.problem.variables):
                     # Solved perfectly!
                     elapsed = time.perf_counter() - start_time
                     _, conflicts = self.checker.count_hard_violations(assignment)
@@ -198,17 +218,31 @@ class MinConflictsSolver(BaseSolver):
                     # Escape deep plateau with random restart
                     break
 
+                if not conflicted_vars:
+                    # The checker found a hard violation that this algorithm's
+                    # overlap/lab move selector cannot repair (for example a
+                    # non-local block/load rule). Restart instead of choosing
+                    # from an empty candidate set.
+                    break
+
                 # Pick a random conflicted variable
                 chosen_var_id = random.choice(conflicted_vars)
+                if chosen_var_id in self.fixed_assignments:
+                    movable_conflicts = [vid for vid in conflicted_vars if vid not in self.fixed_assignments]
+                    if not movable_conflicts:
+                        break
+                    chosen_var_id = random.choice(movable_conflicts)
                 chosen_var = self.problem.variables_dict[chosen_var_id]
 
                 # If this is part of a 2-hour lab, move the pair atomically
                 if chosen_var.is_lab and chosen_var.consecutive_with:
                     partner_id = chosen_var.consecutive_with
+                    partner_var = self.problem.variables_dict[partner_id]
                     candidate_pairs = []
                     for s1 in self.domains[chosen_var_id]:
                         for s2 in self.domains.get(partner_id, []):
-                            if s1.day == s2.day and s1.room_name == s2.room_name and abs(s1.period - s2.period) == 1:
+                            expected_period = s1.period + (partner_var.block_offset - chosen_var.block_offset)
+                            if s1.day == s2.day and s1.room_name == s2.room_name and s2.period == expected_period:
                                 candidate_pairs.append((s1, s2))
 
                     if candidate_pairs:
@@ -267,7 +301,7 @@ class MinConflictsSolver(BaseSolver):
             hard_violations=final_hard,
             soft_penalty=final_soft,
             total_cost=total_cost,
-            success=final_hard == 0,
+            success=final_hard == 0 and len(final_assignment) == len(self.problem.variables),
             cost_history=cost_history,
             conflict_messages=conflicts,
             metadata={"restarts": self.max_restarts}

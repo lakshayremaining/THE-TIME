@@ -32,11 +32,16 @@ class PlainBacktrackingSolver(BaseSolver):
         self.nodes_expanded = 0
         self.start_time = time.perf_counter()
 
-        variables = list(self.problem.variables)
-        initial_domains = {v.var_id: self.problem.get_domain_for_variable(v) for v in variables}
+        variables = [v for v in self.problem.variables if v.var_id not in self.fixed_assignments]
+        initial_domains = self.get_domains()
 
-        assignment: Dict[str, SlotAssignment] = {}
-        success = self._backtrack(0, variables, initial_domains, assignment)
+        assignment: Dict[str, SlotAssignment] = dict(self.fixed_assignments)
+        if any(not initial_domains.get(var_id) for var_id in self.fixed_assignments):
+            success = False
+        else:
+            success = True
+        if success:
+            success = self._backtrack(0, variables, initial_domains, assignment)
         elapsed = time.perf_counter() - self.start_time
 
         total_cost, hard_viol, soft_pen = self.checker.calculate_total_cost(assignment)
@@ -51,7 +56,7 @@ class PlainBacktrackingSolver(BaseSolver):
             hard_violations=hard_viol,
             soft_penalty=soft_pen,
             total_cost=total_cost,
-            success=success and hard_viol == 0 and len(assignment) == len(variables),
+            success=success and hard_viol == 0 and len(assignment) == len(self.problem.variables),
             conflict_messages=conflicts,
             metadata={"timed_out": elapsed >= self.timeout_seconds}
         )
@@ -116,29 +121,35 @@ class HeuristicBacktrackingSolver(BaseSolver):
         self._compute_degree_heuristic()
 
     def _compute_degree_heuristic(self):
-        for v1 in self.problem.variables:
-            deg = 0
-            for v2 in self.problem.variables:
-                if v1.var_id != v2.var_id:
-                    if (
-                        v1.class_name == v2.class_name
-                        or v1.teacher_name == v2.teacher_name
-                        or v1.is_lab == v2.is_lab
-                    ):
-                        deg += 1
-            self.degree_map[v1.var_id] = deg
+        neighbors = {v.var_id: set() for v in self.problem.variables}
+        occupancy = {}
+        for var in self.problem.variables:
+            for slot in self.problem.get_domain_for_variable(var):
+                occupancy.setdefault((slot.day, slot.period, slot.room_name), []).append(var.var_id)
+
+        for var_ids in occupancy.values():
+            unique_ids = set(var_ids)
+            for var_id in unique_ids:
+                neighbors[var_id].update(unique_ids - {var_id})
+
+        for index, first in enumerate(self.problem.variables):
+            for second in self.problem.variables[index + 1:]:
+                if first.class_name == second.class_name or first.teacher_name == second.teacher_name:
+                    neighbors[first.var_id].add(second.var_id)
+                    neighbors[second.var_id].add(first.var_id)
+
+        self.degree_map = {var_id: len(adjacent) for var_id, adjacent in neighbors.items()}
 
     def solve(self) -> SolverResult:
         self.nodes_expanded = 0
         self.start_time = time.perf_counter()
 
         # Initialize domains with unary filtering
-        domains: Dict[str, List[SlotAssignment]] = {
-            v.var_id: self.problem.get_domain_for_variable(v) for v in self.problem.variables
-        }
-
-        assignment: Dict[str, SlotAssignment] = {}
-        success = self._backtrack(domains, assignment)
+        domains = self.get_domains()
+        assignment: Dict[str, SlotAssignment] = dict(self.fixed_assignments)
+        success = not any(not domains.get(var_id) for var_id in self.fixed_assignments)
+        if success:
+            success = self._backtrack(domains, assignment)
         elapsed = time.perf_counter() - self.start_time
 
         total_cost, hard_viol, soft_pen = self.checker.calculate_total_cost(assignment)
@@ -201,9 +212,11 @@ class HeuristicBacktrackingSolver(BaseSolver):
         def count_conflicts(slot: SlotAssignment) -> int:
             eliminated = 0
             for u in unassigned:
-                if u.teacher_name == var.teacher_name or u.class_name == var.class_name:
-                    for u_slot in domains[u.var_id]:
-                        if u_slot.day == slot.day and u_slot.period == slot.period:
+                shares_teacher = u.teacher_name == var.teacher_name
+                shares_class = u.class_name == var.class_name
+                for u_slot in domains[u.var_id]:
+                    if u_slot.day == slot.day and u_slot.period == slot.period:
+                        if shares_teacher or shares_class or u_slot.room_name == slot.room_name:
                             eliminated += 1
             return eliminated
 

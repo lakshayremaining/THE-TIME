@@ -253,7 +253,7 @@ def get_iiit_kota_odd_sem_dataset() -> TimetableProblem:
         "CSP207": Subject("CSP207", "DAA Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
         "AIP203": Subject("AIP203", "Artificial Intelligence Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
         "AIP205": Subject("AIP205", "Machine Learning Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
-        "AIP211": Subject("AIP211", "Web Development Lab", weekly_hours=2, is_lab=True, requires_consecutive=True),
+        "AIP211": Subject("AIP211", "Web Development Lab", weekly_hours=3, is_lab=True, requires_consecutive=True),
 
         # --- 5th Semester (Picture 2) ---
         "AIT301": Subject("AIT301", "Reinforcement Learning", weekly_hours=3, is_lab=False),
@@ -539,8 +539,10 @@ def get_iiit_kota_exact_3rd_sem_template_assignment(problem: TimetableProblem) -
     assignment["Sem_3_AIDE_CST207_s2"] = SlotAssignment("Friday", 1, "RM-241")    # CST207 (RB)
     assignment["Sem_3_AIDE_CST207_s3"] = SlotAssignment("Friday", 2, "RM-241")    # CST207 (RB)
     assignment["Sem_3_AIDE_HST203_s1"] = SlotAssignment("Friday", 4, "RM-241")    # HST203 (AB) (12-1 PM)
-    assignment["Sem_3_AIDE_AIP211_s1"] = SlotAssignment("Friday", 7, "LAB-32")    # AIP211 Lab (KP) - Hour 1 (3-4 PM)
-    assignment["Sem_3_AIDE_AIP211_s2"] = SlotAssignment("Friday", 8, "LAB-32")    # AIP211 Lab (KP) - Hour 2 (4-5 PM)
+    # 3-Hour Web Development Lab AIP211: P6, P7, P8 (2:00 PM - 5:00 PM) in LAB-32
+    assignment["Sem_3_AIDE_AIP211_s1"] = SlotAssignment("Friday", 6, "LAB-32")    # AIP211 Lab (KP) - Hour 1 (2-3 PM)
+    assignment["Sem_3_AIDE_AIP211_s2"] = SlotAssignment("Friday", 7, "LAB-32")    # AIP211 Lab (KP) - Hour 2 (3-4 PM)
+    assignment["Sem_3_AIDE_AIP211_s3"] = SlotAssignment("Friday", 8, "LAB-32")    # AIP211 Lab (KP) - Hour 3 (4-5 PM)
 
     return assignment
 

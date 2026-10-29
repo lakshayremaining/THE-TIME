@@ -30,6 +30,7 @@ class HybridCSPSolver(BaseSolver):
         sa_cooling_rate: float = 0.99,
         sa_initial_temp: float = 50.0,
         sa_max_steps: int = 1500,
+        csp_timeout_seconds: float = 25.0,
         random_seed: Optional[int] = 42,
         **kwargs
     ):
@@ -38,6 +39,7 @@ class HybridCSPSolver(BaseSolver):
         self.sa_cooling_rate = sa_cooling_rate
         self.sa_initial_temp = sa_initial_temp
         self.sa_max_steps = sa_max_steps
+        self.csp_timeout_seconds = csp_timeout_seconds
         self.random_seed = random_seed
 
     def solve(self) -> SolverResult:
@@ -52,7 +54,8 @@ class HybridCSPSolver(BaseSolver):
             use_mrv=True,
             use_degree=True,
             use_forward_checking=True,
-            timeout_seconds=25.0
+            timeout_seconds=self.csp_timeout_seconds,
+            fixed_assignments=self.fixed_assignments
         )
         csp_res = csp_solver.solve()
 
@@ -63,9 +66,13 @@ class HybridCSPSolver(BaseSolver):
                 initial_temperature=self.sa_initial_temp,
                 cooling_rate=self.sa_cooling_rate,
                 max_total_steps=self.sa_max_steps,
-                random_seed=self.random_seed
+                random_seed=self.random_seed,
+                fixed_assignments=self.fixed_assignments
             )
-            return sa_fallback.solve()
+            fallback_result = sa_fallback.solve()
+            fallback_result.algorithm_name = "Hybrid CSP + SA (feasible-start fallback)"
+            fallback_result.metadata["csp_fallback"] = True
+            return fallback_result
 
         phase1_assignment = csp_res.assignment
         phase1_time = csp_res.time_taken
@@ -78,14 +85,14 @@ class HybridCSPSolver(BaseSolver):
         best_cost = phase1_cost
         best_soft = phase1_soft
 
-        domains = {v.var_id: self.problem.get_domain_for_variable(v) for v in self.problem.variables}
-        variables = list(self.problem.variables)
+        domains = self.get_domains()
+        variables = [v for v in self.problem.variables if v.var_id not in self.fixed_assignments]
 
         temperature = self.sa_initial_temp
         cost_history: List[float] = [phase1_cost]
         steps = 0
 
-        while temperature > 0.05 and steps < self.sa_max_steps:
+        while variables and temperature > 0.05 and steps < self.sa_max_steps:
             steps += 1
 
             # Candidate move: swap or slot move

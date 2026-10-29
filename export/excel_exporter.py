@@ -50,7 +50,7 @@ def export_timetable_to_excel_bytes(
     ws_master = wb.create_sheet(title="Master Schedule")
     ws_master.views.sheetView[0].showGridLines = True
 
-    headers = ["Class", "Subject", "Teacher", "Day", "Period", "Room", "Type"]
+    headers = ["Class", "Subject Code", "Subject Name", "Faculty", "Day", "Period", "Time Slot", "Room", "Type"]
     for col_idx, h in enumerate(headers, 1):
         cell = ws_master.cell(row=1, column=col_idx, value=h)
         cell.fill = header_fill
@@ -66,18 +66,35 @@ def export_timetable_to_excel_bytes(
         )
     )
 
+    last_row = 1
     for row_idx, (var_id, slot) in enumerate(sorted_entries, 2):
+        last_row = row_idx
         var = var_dict.get(var_id)
         if not var:
             continue
+        subj = problem.subjects.get(var.subject_code)
+        subj_name = subj.name if subj else var.subject_code
         session_type = "Lab" if var.is_lab else "Theory"
-        row_vals = [var.class_name, var.subject_code, var.teacher_name, slot.day, slot.period, slot.room_name, session_type]
+
+        time_slot_str = (
+            problem.time_structure.period_times[slot.period - 1]
+            if problem.time_structure.period_times and slot.period - 1 < len(problem.time_structure.period_times)
+            else f"Period {slot.period}"
+        )
+
+        row_vals = [
+            var.class_name, var.subject_code, subj_name, var.teacher_name,
+            slot.day, slot.period, time_slot_str, slot.room_name, session_type
+        ]
         for col_idx, val in enumerate(row_vals, 1):
             cell = ws_master.cell(row=row_idx, column=col_idx, value=val)
             cell.border = thin_border
             cell.alignment = center_align
             if var.is_lab:
                 cell.fill = lab_fill
+
+    footer_cell = ws_master.cell(row=last_row + 2, column=1, value="Creation of Lakshay Indoriya")
+    footer_cell.font = Font(name="Calibri", size=10, italic=True, bold=True, color="1E3A8A")
 
     # ==================== 2. Class Timetables ====================
     ws_class = wb.create_sheet(title="Class Timetables")
@@ -137,6 +154,10 @@ def export_timetable_to_excel_bytes(
             current_row += 1
         current_row += 2
 
+    # Footer for Class Timetables
+    f_class = ws_class.cell(row=current_row, column=1, value="Creation of Lakshay Indoriya")
+    f_class.font = Font(name="Calibri", size=10, italic=True, bold=True, color="1E3A8A")
+
     # ==================== 3. Teacher Timetables ====================
     ws_teacher = wb.create_sheet(title="Teacher Timetables")
     ws_teacher.views.sheetView[0].showGridLines = True
@@ -192,6 +213,10 @@ def export_timetable_to_excel_bytes(
                     cell.font = Font(name="Calibri", size=9, color="808080")
             current_row += 1
         current_row += 2
+
+    # Footer for Teacher Timetables
+    f_teacher = ws_teacher.cell(row=current_row, column=1, value="Creation of Lakshay Indoriya")
+    f_teacher.font = Font(name="Calibri", size=10, italic=True, bold=True, color="1E3A8A")
 
     # Auto-adjust column widths
     for sheet in wb.worksheets:

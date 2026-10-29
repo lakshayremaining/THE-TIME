@@ -152,33 +152,33 @@ class ConstraintChecker:
                     f"exceeding max load of {teacher.max_weekly_load}."
                 )
 
-        # --- Strict 2-Hour Lab Block Constraint (Consecutive Periods) ---
-        checked_pairs = set()
+        # --- Strict Multi-Hour Lab Block Constraint (2-Hour & 3-Hour Labs) ---
+        checked_blocks = set()
         for var_id, var in self.var_map.items():
-            if var.is_lab and var.consecutive_with and var_id in assignment and var.consecutive_with in assignment:
-                pair_key = tuple(sorted([var_id, var.consecutive_with]))
-                if pair_key in checked_pairs:
+            if var.is_lab and getattr(var, "block_vars", None) and len(var.block_vars) > 1:
+                block_tuple = tuple(sorted(var.block_vars))
+                if block_tuple in checked_blocks:
                     continue
-                checked_pairs.add(pair_key)
+                checked_blocks.add(block_tuple)
 
-                s1 = assignment[var_id]
-                s2 = assignment[var.consecutive_with]
-                c_batch = self.class_map.get(var.class_name)
-                lunch_p = c_batch.lunch_break_period if c_batch else -1
-
-                is_consecutive_block = (
-                    s1.day == s2.day
-                    and s1.room_name == s2.room_name
-                    and abs(s1.period - s2.period) == 1
-                    and s1.period != lunch_p
-                    and s2.period != lunch_p
-                )
-                if not is_consecutive_block:
-                    violations_count += 1
-                    conflicts.append(
-                        f"[H-Lab - 2-Hour Block Clashed] Lab '{var.subject_code}' for '{var.class_name}' "
-                        f"must be consecutive in same lab room, but is split ({s1.day} P{s1.period} in {s1.room_name} vs {s2.day} P{s2.period} in {s2.room_name})."
-                    )
+                assigned_members = [(vid, assignment[vid]) for vid in var.block_vars if vid in assignment]
+                if len(assigned_members) > 1:
+                    first_vid, first_slot = assigned_members[0]
+                    first_var = self.var_map[first_vid]
+                    for other_vid, other_slot in assigned_members[1:]:
+                        other_var = self.var_map[other_vid]
+                        expected_p = first_slot.period + (other_var.block_offset - first_var.block_offset)
+                        if (
+                            other_slot.day != first_slot.day
+                            or other_slot.room_name != first_slot.room_name
+                            or other_slot.period != expected_p
+                        ):
+                            violations_count += 1
+                            conflicts.append(
+                                f"[H-Lab Block] {len(var.block_vars)}-Hour Lab '{var.subject_code}' for '{var.class_name}' "
+                                f"must be consecutive in same lab room, but is split ({first_slot.day} P{first_slot.period} in {first_slot.room_name} vs {other_slot.day} P{other_slot.period} in {other_slot.room_name})."
+                            )
+                            break
 
         return violations_count, conflicts
 
@@ -371,25 +371,18 @@ class ConstraintChecker:
                 if other_slot.room_name == slot.room_name:
                     return False
 
-        # 6. Consecutive 2-Hour Lab Block check
-        if var.is_lab and var.consecutive_with:
-            if var.consecutive_with in current_assignment:
-                partner_slot = current_assignment[var.consecutive_with]
-                # Must be on the same day, same lab room, and adjacent period
-                if partner_slot.day != slot.day or partner_slot.room_name != slot.room_name:
-                    return False
-                if abs(partner_slot.period - slot.period) != 1:
-                    return False
-            else:
-                # Ensure slot has at least one valid adjacent period not hitting lunch or boundary
-                adjacent_possible = False
-                for adj_p in [slot.period - 1, slot.period + 1]:
-                    if 1 <= adj_p <= self.time_structure.periods_per_day:
-                        if adj_p != c_batch.lunch_break_period:
-                            if (slot.day, adj_p) not in teacher.unavailable_slots:
-                                adjacent_possible = True
-                                break
-                if not adjacent_possible:
-                    return False
+        # 6. Multi-Hour Consecutive Lab Block check (supports 2-Hour and 3-Hour Labs)
+        if var.is_lab and getattr(var, "block_vars", None) and len(var.block_vars) > 1:
+            for b_vid in var.block_vars:
+                if b_vid != var.var_id and b_vid in current_assignment:
+                    b_slot = current_assignment[b_vid]
+                    b_var = self.var_map[b_vid]
+                    # Must be on exact same day and same lab room
+                    if b_slot.day != slot.day or b_slot.room_name != slot.room_name:
+                        return False
+                    # Period must match relative block offset
+                    expected_p = b_slot.period + (var.block_offset - b_var.block_offset)
+                    if slot.period != expected_p:
+                        return False
 
         return True

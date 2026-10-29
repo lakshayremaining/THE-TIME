@@ -17,7 +17,7 @@ Includes implementations of **Plain Backtracking CSP (Baseline)**, **Heuristic C
   - **Min-Conflicts Local Search**: Conflicted variable heuristic with random walk and random restart plateau escapes.
   - **Simulated Annealing (+6 Bonus Marks)**: Multi-operator neighborhood exploration with geometric cooling schedule ($T_{k+1} = \alpha T_k$) and Metropolis acceptance criterion.
   - **Hybrid CSP + SA (+6 Bonus Marks)**: Two-phase pipeline where Phase 1 guarantees 0 hard conflicts via CSP, and Phase 2 strictly navigates the feasible manifold using SA to maximize soft-constraint timetable quality.
-  - **Hill Climbing**: Deterministic steepest-descent local search baseline.
+  - **Hill Climbing**: Feasible-seeded local search with single-session, compatible-swap, and whole-lab-block moves.
 - **Interactive Streamlit Web UI**:
   - **Multi-View Timetable Grids**: View by Class Batch, by Teacher, and by Room.
   - **Real-Time Manual Editing & Conflict Flagger**: Move any session; conflicts are immediately identified and explained in human-readable terms.
@@ -44,7 +44,7 @@ timetable_project/
 │   ├── hybrid.py               # Hybrid CSP + Simulated Annealing (+6 Bonus)
 │   └── hill_climbing.py        # Hill Climbing baseline
 ├── data/
-│   ├── datasets.py             # Solvable Small & Large dataset generators
+│   ├── datasets.py             # IIIT Kota and internal benchmark dataset generators
 │   ├── small_dataset.json      # 3 classes, 6 teachers, 4 rooms, 5x6 periods (47 sessions)
 │   └── large_dataset.json      # 8 classes, 16 teachers, 9 rooms, 5x7 periods (132 sessions)
 ├── export/
@@ -96,6 +96,8 @@ python -m experiments.benchmark
 
 ## 📊 Experimental Results (10 Runs Summary)
 
+> The tables below record an earlier benchmark run. The current app no longer exposes the Small/Large datasets in its selector, and local-search initialization has since changed; rerun `python -m experiments.benchmark` before using these numbers as current performance claims.
+
 ### Small Dataset (3 Classes, 6 Teachers, 4 Rooms — 47 Sessions)
 | Metric | Backtracking (Baseline) | Backtracking (+ Heuristics) | Min-Conflicts | Simulated Annealing (+6) | Hybrid CSP+SA (+6) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -119,7 +121,7 @@ python -m experiments.benchmark
 ## 🎯 Demo Walkthrough (8-10 Minutes Guide)
 
 1. **Overview (1 min)**: Explain CSP formulation (Variables = sessions, Domains = (Day, Period, Room), Constraints = H1-H9 and S1-S5).
-2. **Dataset Selection (1 min)**: Show Small vs. Large datasets with automated solvability validation.
+2. **Dataset Selection (1 min)**: Load the IIIT Kota timetable or upload a custom JSON dataset, then review the validation status.
 3. **Algorithm Execution (3 min)**:
    - Run Plain Backtracking vs. Backtracking with Heuristics (show speed & zero backtracks).
    - Run Min-Conflicts (show rapid convergence in ~20 iterations).

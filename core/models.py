@@ -61,7 +61,9 @@ class SessionVariable:
     teacher_name: str
     session_index: int  # 1 to weekly_hours
     is_lab: bool = False
-    consecutive_with: Optional[str] = None  # ID of linked consecutive session (for multi-period labs)
+    consecutive_with: Optional[str] = None  # ID of linked consecutive session
+    block_vars: List[str] = field(default_factory=list)  # All variable IDs in this continuous block (e.g. 2hr, 3hr)
+    block_offset: int = 0  # 0 for 1st hour, 1 for 2nd hour, 2 for 3rd hour
 
 
 @dataclass
@@ -191,42 +193,27 @@ class TimetableProblem:
                 hours = subj.weekly_hours
                 teacher_loads[teacher_name] += hours
 
-                # If it's a lab with consecutive requirement (e.g. 2 hours)
+                # If it's a lab with consecutive requirement (e.g. 2 hours or 3 hours)
                 if subj.is_lab and subj.requires_consecutive and hours >= 2:
-                    # Generate pairs
-                    for session_idx in range(1, hours + 1, 2):
-                        v1_id = f"{c_name}_{s_code}_s{session_idx}"
-                        if session_idx + 1 <= hours:
-                            v2_id = f"{c_name}_{s_code}_s{session_idx+1}"
-                            v1 = SessionVariable(
-                                var_id=v1_id,
+                    block_sizes = [2, 2] if hours == 4 else [hours]
+                    sess_counter = 1
+                    for b_size in block_sizes:
+                        b_ids = [f"{c_name}_{s_code}_s{sess_counter + k}" for k in range(b_size)]
+                        for k in range(b_size):
+                            v_id = b_ids[k]
+                            v = SessionVariable(
+                                var_id=v_id,
                                 class_name=c_name,
                                 subject_code=s_code,
                                 teacher_name=teacher_name,
-                                session_index=session_idx,
+                                session_index=sess_counter + k,
                                 is_lab=True,
-                                consecutive_with=v2_id
+                                consecutive_with=b_ids[k + 1] if k + 1 < b_size else (b_ids[k - 1] if k > 0 else None),
+                                block_vars=b_ids,
+                                block_offset=k
                             )
-                            v2 = SessionVariable(
-                                var_id=v2_id,
-                                class_name=c_name,
-                                subject_code=s_code,
-                                teacher_name=teacher_name,
-                                session_index=session_idx + 1,
-                                is_lab=True,
-                                consecutive_with=v1_id
-                            )
-                            variables.extend([v1, v2])
-                        else:
-                            v1 = SessionVariable(
-                                var_id=v1_id,
-                                class_name=c_name,
-                                subject_code=s_code,
-                                teacher_name=teacher_name,
-                                session_index=session_idx,
-                                is_lab=True
-                            )
-                            variables.append(v1)
+                            variables.append(v)
+                        sess_counter += b_size
                 else:
                     for session_idx in range(1, hours + 1):
                         v_id = f"{c_name}_{s_code}_s{session_idx}"
@@ -237,7 +224,9 @@ class TimetableProblem:
                                 subject_code=s_code,
                                 teacher_name=teacher_name,
                                 session_index=session_idx,
-                                is_lab=subj.is_lab
+                                is_lab=subj.is_lab,
+                                block_vars=[v_id],
+                                block_offset=0
                             )
                         )
 
@@ -249,7 +238,7 @@ class TimetableProblem:
         Returns all valid (day, period, room) triples satisfying unary constraints:
         - Room capacity >= class strength
         - Room type matches session type (lab vs classroom)
-        - Class lunch break is avoided
+        - Class lunch break is avoided (and entire multi-hour block does not cross lunch)
         - Teacher unavailable slots are avoided
         """
         c_batch = self.classes[var.class_name]
@@ -261,14 +250,26 @@ class TimetableProblem:
             if r.capacity >= c_batch.strength and r.is_lab == var.is_lab
         ]
 
+        block_len = len(var.block_vars) if var.block_vars else 1
+        k_offset = var.block_offset
+
         domain = []
         for day in self.time_structure.days:
             for p in range(1, self.time_structure.periods_per_day + 1):
-                # Avoid class lunch break
-                if p == c_batch.lunch_break_period:
+                p_start = p - k_offset
+                p_end = p_start + block_len - 1
+
+                # Entire block must fit inside working hours
+                if p_start < 1 or p_end > self.time_structure.periods_per_day:
                     continue
-                # Avoid teacher unavailable slot
-                if (day, p) in unavailable_set:
+
+                # Entire block must avoid lunch break
+                block_periods = list(range(p_start, p_end + 1))
+                if c_batch.lunch_break_period in block_periods:
+                    continue
+
+                # Entire block must avoid teacher unavailable slots
+                if any((day, bp) in unavailable_set for bp in block_periods):
                     continue
 
                 for room in valid_rooms:

@@ -5,3 +5,6 @@ __pycache__/
 .idea/
 .venv/
 env/
+*.zip
+*.csv
+.DS_Store

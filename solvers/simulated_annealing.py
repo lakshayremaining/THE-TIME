@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 from core.models import TimetableProblem, SessionVariable, SlotAssignment
 from core.constraints import ConstraintChecker
 from solvers.base import BaseSolver, SolverResult
+from solvers.initialization import find_feasible_initial_assignment, failed_initialization_result
 
 
 class SimulatedAnnealingSolver(BaseSolver):
@@ -36,6 +37,7 @@ class SimulatedAnnealingSolver(BaseSolver):
         max_total_steps: int = 4000,
         initial_assignment: Optional[Dict[str, SlotAssignment]] = None,
         random_seed: Optional[int] = 42,
+        initialization_timeout: float = 15.0,
         **kwargs
     ):
         super().__init__(problem, **kwargs)
@@ -47,10 +49,9 @@ class SimulatedAnnealingSolver(BaseSolver):
         self.max_total_steps = max_total_steps
         self.provided_initial = initial_assignment
         self.random_seed = random_seed
-        self.domains: Dict[str, List[SlotAssignment]] = {
-            v.var_id: self.problem.get_domain_for_variable(v) for v in self.problem.variables
-        }
-        self.variables = list(self.problem.variables)
+        self.initialization_timeout = initialization_timeout
+        self.domains: Dict[str, List[SlotAssignment]] = self.get_domains()
+        self.variables = [v for v in self.problem.variables if v.var_id not in self.fixed_assignments]
         self.var_dict = {v.var_id: v for v in self.problem.variables}
 
     def _random_initial_state(self) -> Dict[str, SlotAssignment]:
@@ -99,30 +100,35 @@ class SimulatedAnnealingSolver(BaseSolver):
                 new_state[v1.var_id] = new_slot
                 desc = f"Move {v1.var_id}"
         else:
-            # Operator 3: Move lab pair consecutively
-            lab_vars = [v for v in self.variables if v.is_lab and v.consecutive_with]
-            if lab_vars:
-                v1 = random.choice(lab_vars)
-                v2_id = v1.consecutive_with
-                if v2_id in new_state:
-                    # Pick random day and period 1 to periods_per_day - 1
-                    day = random.choice(self.problem.time_structure.days)
-                    max_p = self.problem.time_structure.periods_per_day
-                    p = random.randint(1, max_p - 1)
-                    # Find a lab room
-                    lab_rooms = [r for r in self.problem.rooms.values() if r.is_lab]
-                    if lab_rooms:
-                        room = random.choice(lab_rooms)
-                        slot1 = SlotAssignment(day=day, period=p, room_name=room.name)
-                        slot2 = SlotAssignment(day=day, period=p + 1, room_name=room.name)
-                        if slot1 in self.domains[v1.var_id] and slot2 in self.domains[v2_id]:
-                            new_state[v1.var_id] = slot1
-                            new_state[v2_id] = slot2
-                            desc = f"Move lab pair {v1.var_id},{v2_id} -> {day} P{p}-{p+1}"
-                        else:
-                            desc = "No-op"
-                    else:
-                        desc = "No-op"
+            # Operator 3: Move a whole lab block while preserving its period offsets.
+            var_map = self.var_dict
+            seen_blocks = set()
+            blocks = []
+            for var in self.problem.variables:
+                block_key = tuple(var.block_vars)
+                if var.is_lab and len(block_key) > 1 and block_key not in seen_blocks:
+                    seen_blocks.add(block_key)
+                    block = [var_map[member_id] for member_id in block_key]
+                    if all(member.var_id not in self.fixed_assignments for member in block):
+                        blocks.append(sorted(block, key=lambda member: member.block_offset))
+            if blocks:
+                block = random.choice(blocks)
+                max_start = self.problem.time_structure.periods_per_day - len(block) + 1
+                candidates = []
+                for day in self.problem.time_structure.days:
+                    for start_period in range(1, max_start + 1):
+                        for room in self.problem.rooms.values():
+                            proposed = {
+                                member.var_id: SlotAssignment(
+                                    day, start_period + member.block_offset, room.name
+                                )
+                                for member in block
+                            }
+                            if all(proposed[member.var_id] in self.domains[member.var_id] for member in block):
+                                candidates.append(proposed)
+                if candidates:
+                    new_state.update(random.choice(candidates))
+                    desc = f"Move lab block {', '.join(v.var_id for v in block)}"
                 else:
                     desc = "No-op"
             else:
@@ -138,11 +144,32 @@ class SimulatedAnnealingSolver(BaseSolver):
 
         start_time = time.perf_counter()
 
-        current_state = (
-            dict(self.provided_initial)
-            if self.provided_initial is not None
-            else self._random_initial_state()
-        )
+        current_state = None
+        initializer = "provided initial assignment"
+        if self.provided_initial is not None:
+            candidate = dict(self.provided_initial)
+            candidate.update(self.fixed_assignments)
+            _, candidate_hard, _ = self.checker.calculate_total_cost(candidate)
+            if (
+                candidate_hard == 0
+                and len(candidate) == len(self.problem.variables)
+                and all(candidate.get(var_id) == slot for var_id, slot in self.fixed_assignments.items())
+            ):
+                current_state = candidate
+
+        if current_state is None:
+            current_state, initializer, init_messages = find_feasible_initial_assignment(
+                self.problem,
+                fixed_assignments=self.fixed_assignments,
+                timeout_seconds=self.initialization_timeout,
+                random_seed=self.random_seed,
+            )
+            if current_state is None:
+                return failed_initialization_result(
+                    "Simulated Annealing (feasible initialization failed)",
+                    init_messages,
+                    time.perf_counter() - start_time,
+                )
 
         current_cost, current_hard, current_soft = self.checker.calculate_total_cost(current_state)
         best_state = dict(current_state)
@@ -154,11 +181,20 @@ class SimulatedAnnealingSolver(BaseSolver):
         cost_history: List[float] = [current_cost]
         total_steps = 0
 
-        while temperature > self.min_temperature and total_steps < self.max_total_steps:
+        while self.variables and temperature > self.min_temperature and total_steps < self.max_total_steps:
             for _ in range(self.max_steps_per_temp):
                 total_steps += 1
                 neighbor_state, _ = self._generate_neighbor(current_state)
-                neighbor_cost, n_hard, n_soft = self.checker.calculate_total_cost(neighbor_state)
+                n_hard, _ = self.checker.count_hard_violations(neighbor_state)
+
+                # Start from a feasible schedule and keep the annealing walk on
+                # the feasible portion of the search space.
+                if n_hard > 0:
+                    cost_history.append(current_cost)
+                    continue
+
+                n_soft, _, _ = self.checker.count_soft_violations(neighbor_state)
+                neighbor_cost = float(n_soft)
 
                 delta = neighbor_cost - current_cost
 
@@ -212,5 +248,10 @@ class SimulatedAnnealingSolver(BaseSolver):
             success=best_hard == 0,
             cost_history=cost_history,
             conflict_messages=conflicts,
-            metadata={"final_temp": temperature, "cooling_rate": self.cooling_rate}
+            metadata={
+                "final_temp": temperature,
+                "cooling_rate": self.cooling_rate,
+                "feasible_initializer": initializer,
+                "feasible_start": True,
+            }
         )
